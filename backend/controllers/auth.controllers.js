@@ -174,6 +174,8 @@ exports.authWithGoogle = async (req, res) => {
 		}
 		const token = await jwt.sign({ userId: user._id, role: user.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 
+		console.log("token", token)
+
 		res.cookie("token", token, {
 			secure: false,
 			sameSite: "strict",

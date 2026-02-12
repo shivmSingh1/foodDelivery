@@ -1,12 +1,14 @@
 const express = require('express');
 const dbConnect = require('./config/dbConnect');
 const indexRouter = require('./routes/index.routes');
+const cookieParser = require("cookie-parser");
 const app = express();
 require("dotenv").config()
 const cors = require("cors");
 
 const port = process.env.PORT || 4000;
 
+app.use(cookieParser());
 app.use(cors({
 	origin: "http://localhost:5173",
 	credentials: true
