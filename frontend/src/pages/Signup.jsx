@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { serverUrl } from '../App';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
+import { useNavigate } from 'react-router-dom';
 
 function Signup() {
+	const navigate = useNavigate()
 	const [userDetails, setUserDetails] = useState({
 		fullname: "",
 		email: "",
@@ -30,7 +32,7 @@ function Signup() {
 		try {
 			const res = await axios.post(`${serverUrl}/auth/signup`, { ...userDetails }, { withCredentials: true })
 			if (res.status === 200) {
-				alert("success")
+				navigate("/")
 			}
 		} catch (error) {
 			console.log("signup error", error.message)
@@ -56,7 +58,7 @@ function Signup() {
 				}
 				const res = await axios.post(`${serverUrl}/auth/auth-google`, details, { withCredentials: true })
 				if (res.status === 200) {
-					alert("signin success with google")
+					navigate("/")
 				}
 			} catch (error) {
 				console.log("auth with google error", error.message)
@@ -68,7 +70,7 @@ function Signup() {
 	}
 
 	return (
-		<div>
+		<div className='container' >
 			<form onSubmit={signup} className='d-flex flex-column' >
 				<div className='mb-2' >
 					<label htmlFor='fullname' >fullname</label>
@@ -105,6 +107,9 @@ function Signup() {
 
 				<input type="submit" value="submit" />
 			</form>
+			<div className='m-2' >
+				<p>already have an account? <strong onClick={() => navigate("/")} >Signin</strong></p>
+			</div>
 		</div>
 	)
 }

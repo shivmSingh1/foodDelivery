@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import axios from "axios"
 import { useState } from 'react';
 import { serverUrl } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
+import useCurrentUser from '../customHooks/useCurrentUser';
 
 function Signin() {
 	const [userDetails, setUserDetails] = useState({
@@ -28,7 +29,6 @@ function Signin() {
 		try {
 			const res = await axios.post(`${serverUrl}/auth/login`, { ...userDetails }, { withCredentials: true })
 			if (res.status === 200) {
-				alert("success")
 				navigate("/")
 			}
 		} catch (error) {
@@ -57,9 +57,9 @@ function Signin() {
 			console.log(error.message)
 		}
 	}
-
+	useCurrentUser()
 	return (
-		<div>
+		<div className='container' >
 			<form onSubmit={signin} className='d-flex flex-column' >
 
 				<div className='mb-2'>
@@ -78,6 +78,9 @@ function Signin() {
 
 				<input type="submit" value="submit" />
 			</form>
+			<div className='m-2' >
+				<p>don't have an account? <strong onClick={() => navigate("/signup")} >Signup</strong></p>
+			</div>
 		</div>
 	)
 }

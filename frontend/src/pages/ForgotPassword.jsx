@@ -59,7 +59,7 @@ function ForgotPassword() {
 	}
 
 	return (
-		<div className='border shadow p-4' >
+		<div className='border container shadow p-4' >
 			{
 				step === 1 && (
 					<div className='d-flex flex-column gap-4' >

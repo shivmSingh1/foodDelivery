@@ -8,7 +8,7 @@ function Home() {
 	const { userDetails } = useSelector(state => state.user)
 	console.log("details", userDetails)
 	return (
-		<div>
+		<div className='container' >
 			{
 				userDetails?.role === "user" && <UserDashboard />
 			}

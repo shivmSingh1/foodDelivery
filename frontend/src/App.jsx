@@ -8,18 +8,19 @@ import ForgotPassword from './pages/ForgotPassword';
 import useCurrentUser from './customHooks/useCurrentUser';
 import Home from './pages/Home';
 import { useSelector } from 'react-redux';
+import UseCurrentCity from './customHooks/UseCurrentCity';
 export const serverUrl = "http://localhost:5000/api"
 
 function App() {
   useCurrentUser()
-  const userData = useSelector(state => state.user)
-  console.log(userData, "dsfds")
+  UseCurrentCity()
+  const { userDetails } = useSelector(state => state.user)
   return (
     <>
       <Routes>
-        <Route path='/' element={userData ? <Home /> : <Navigate to={"/signin"} />} />
-        <Route path='/signup' element={!userData ? <Signup /> : <Navigate to={"/"} />} />
-        <Route path="/signin" element={!userData ? <Signin /> : <Navigate to={"/"} />} />
+        <Route path='/' element={userDetails ? <Home /> : <Navigate to={"/signin"} />} />
+        <Route path='/signup' element={!userDetails ? <Signup /> : <Navigate to={"/"} />} />
+        <Route path="/signin" element={!userDetails ? <Signin /> : <Navigate to={"/"} />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </>

@@ -10,9 +10,8 @@ const useCurrentUser = () => {
 		const fetchUser = async () => {
 			try {
 				const res = await axios.get(`${serverUrl}/user/getCurrentUser`, { withCredentials: true })
-				console.log("ressss", res)
 				if (res.status === 200) {
-					alert("success in getting current user")
+					// alert("success in getting current user")
 				}
 				dispatch(setUserDetails(res?.data?.data))
 			} catch (error) {
