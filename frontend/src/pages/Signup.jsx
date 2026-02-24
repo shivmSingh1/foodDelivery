@@ -5,6 +5,7 @@ import { serverUrl } from '../App';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 function Signup() {
 	const navigate = useNavigate()
@@ -41,14 +42,13 @@ function Signup() {
 
 	const signupWithGoogle = async () => {
 		try {
-			console.log("here")
 			const provider = new GoogleAuthProvider()
 			const result = await signInWithPopup(auth, provider)
 			// console.log("result", result)
 			// console.log(result.user.displayName, result.user.email)
 			try {
 				if (!userDetails.phone || !userDetails.role) {
-					return alert("missing phone no or role")
+					return toast.error("missing phone no or role")
 				}
 				const details = {
 					phone: userDetails?.phone,
@@ -61,7 +61,8 @@ function Signup() {
 					navigate("/")
 				}
 			} catch (error) {
-				console.log("auth with google error", error.message)
+				toast.error(error.response?.data?.message)
+				console.log("auth with google error", error.response?.data?.message)
 			}
 
 		} catch (error) {

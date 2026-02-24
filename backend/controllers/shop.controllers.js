@@ -4,6 +4,8 @@ const { errorResponse, serverResponse, successResponse } = require("../utils/res
 
 exports.createOrEditShop = async (req, res) => {
 	try {
+		console.log(req.body, "body")
+		console.log(req.file)
 		const { userId } = req
 		const { name, city, state, address } = req.body
 
@@ -13,6 +15,8 @@ exports.createOrEditShop = async (req, res) => {
 			image = await uploadToCloudinary(req.file.path)
 
 		}
+
+		console.log("imageeeeee", image)
 
 		const updatedShop = await Shop.findOneAndUpdate(
 			{ owner: userId },
@@ -35,5 +39,21 @@ exports.createOrEditShop = async (req, res) => {
 
 	} catch (error) {
 		serverResponse(res, error, "create or edit shop error")
+	}
+}
+
+
+exports.getShops = async (req, res) => {
+	try {
+		const { userId } = req;
+		const shops = await Shop.find({ owner: userId }).populate(["items", "owner"]);
+
+		if (!shops || shops.length === 0) {
+			return successResponse(res, "no shop found")
+		}
+
+		successResponse(res, "shops fetched successfully", shops)
+	} catch (error) {
+		serverResponse(res, error, "get shop error")
 	}
 }

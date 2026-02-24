@@ -163,7 +163,8 @@ exports.resetPassword = async (req, res) => {
 exports.authWithGoogle = async (req, res) => {
 	try {
 		const { fullname, email, phone: mobile, role } = req.body;
-		let user = await User.findOne({ email })
+		let user = await User.findOne({ email });
+		let isNew = false;
 		if (!user) {
 			user = await User.create({
 				fullname,
@@ -171,7 +172,13 @@ exports.authWithGoogle = async (req, res) => {
 				email,
 				role
 			})
+			isNew = true
 		}
+
+		if (!isNew && mobile) {
+			return errorResponse(res, "account with this email already existed", null);
+		}
+
 		const token = await jwt.sign({ userId: user._id, role: user.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 
 		console.log("token", token)

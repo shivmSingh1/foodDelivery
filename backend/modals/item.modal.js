@@ -9,6 +9,10 @@ const itemSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	price: {
+		type: Number,
+		required: true
+	},
 	shop: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Shop",
@@ -17,17 +21,16 @@ const itemSchema = new mongoose.Schema({
 	category: {
 		type: String,
 		enum: [
-			"Italian",
+			"Fast Food",
+			"Main Course",
+			"Starters",
+			"Snacks",
+			"Desserts",
+			"Beverages",
 			"Chinese",
-			"Mexican",
-			"Indian",
-			"Thai",
-			"Japanese",
-			"French",
-			"Mediterranean",
-			"Korean",
-			"American",
-			"others"
+			"Street Food",
+			"Sandwiches & Wraps",
+			"Breakfast"
 		],
 		required: true
 	},

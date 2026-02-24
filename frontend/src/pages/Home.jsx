@@ -6,7 +6,6 @@ import OwnerDashboard from '../components/ownerDashboard'
 
 function Home() {
 	const { userDetails } = useSelector(state => state.user)
-	console.log("details", userDetails)
 	return (
 		<div className='container' >
 			{
