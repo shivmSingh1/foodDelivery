@@ -57,3 +57,24 @@ exports.getShops = async (req, res) => {
 		serverResponse(res, error, "get shop error")
 	}
 }
+
+exports.getShopsByCity = async (req, res) => {
+	try {
+		const { userId } = req;
+		const { city } = req.query;
+		if (!city) {
+			return errorResponse(res, "required city for shops")
+		}
+
+		const shops = await Shop.find({
+			city: { $regex: new RegExp(`^${city}$`, "i") }
+		});
+
+		if (!shops || shops.length <= 0) {
+			errorResponse(res, "no shop found in the city")
+		}
+		successResponse(res, "shops fetched successfully", shops)
+	} catch (error) {
+		serverResponse(res, error, "get item by city error")
+	}
+}
