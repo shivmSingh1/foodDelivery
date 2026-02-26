@@ -1,4 +1,6 @@
 import React from 'react'
+import GoogleAddressInput from './GoogleAddressInput'
+import { IoArrowBack } from 'react-icons/io5'
 
 function Checkout() {
 	return (
@@ -7,7 +9,9 @@ function Checkout() {
 			<div>
 				<div>
 					<h4>Checkout</h4>
-					<input type="text" />
+					<div>
+						<GoogleAddressInput />
+					</div>
 				</div>
 			</div>
 		</div>
