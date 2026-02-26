@@ -36,7 +36,7 @@ function Cart() {
 								<span><h5 ><LiaRupeeSignSolid />{totalAmount && totalAmount}</h5></span>
 							</div>
 							<div className='d-flex justify-content-end mt-3' >
-								<button className='btn btn-success' >Proceed to checkout</button>
+								<button className='btn btn-success' onClick={() => navigate("/checkout")} >Proceed to checkout</button>
 							</div>
 						</div>
 					)

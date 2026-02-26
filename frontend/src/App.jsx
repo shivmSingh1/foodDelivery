@@ -14,6 +14,7 @@ import AddItems from './components/AddItems';
 import Cart from './components/Cart';
 import { useEffect } from 'react';
 import { cartTotalAmount } from './redux/userSlice';
+import Checkout from './components/Checkout';
 export const serverUrl = "http://localhost:5000/api"
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/add-item" element={<AddItems />} />
         <Route path="/add-item/:id" element={<AddItems />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Routes>
     </>
   )
