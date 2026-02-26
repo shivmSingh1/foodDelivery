@@ -9,7 +9,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function Nav({ isUser, isOwner }) {
-	const { userDetails } = useSelector(state => state.user)
+	const { userDetails, cart } = useSelector(state => state.user)
 	const { shopDetails } = useSelector(state => state.Shop)
 	const { city } = useSelector(state => state.user)
 	const [showLogoutBox, setShowLogoutBox] = useState(false)
@@ -30,7 +30,10 @@ function Nav({ isUser, isOwner }) {
 			console.log(error.message, "logout error")
 		}
 	}
-
+	useEffect(() => {
+		console.log(cart)
+		console.log(cart?.length)
+	}, [cart])
 	return (
 		<div className='container' >
 			<div className='d-flex justify-content-center gap-3 p-2'>
@@ -80,9 +83,9 @@ function Nav({ isUser, isOwner }) {
 					{
 						isUser && (
 							<>
-								<span className='me-2' >
+								<span className='me-2' onClick={() => navigate('/cart')} >
 									<span className='position-relative' ><CiShoppingCart size={30} /></span>
-									<span className='position-absolute top-0' ><small>0</small></span>
+									<span className='position-absolute top-0' ><small>{cart?.length}</small></span>
 								</span>
 								<span className='p-1 border ' >
 									my orders
