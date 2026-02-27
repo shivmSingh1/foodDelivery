@@ -8,11 +8,13 @@ import Map from './Map';
 import { setAddress, setLocation } from '../redux/mapSlice';
 import axios from 'axios';
 import getCurrentLocation from '../utils/getCurrentLocation';
+import AddressInput from './AddressInput';
+import getAddress from '../utils/getAddressByLatLng';
+import { toast } from 'react-toastify';
 
 function Checkout() {
 	const { location, address } = useSelector((state) => state.Map)
 	const [deliveryAddress, setDeliveryAddress] = useState(null)
-	const [currentAddress, setCurrentAddress] = useState(false)
 	const dispatch = useDispatch()
 
 	useEffect(() => {
@@ -40,6 +42,15 @@ function Checkout() {
 		setNewLocation(location)
 	}
 
+	const handleSearch = async () => {
+		const location = await getAddress(deliveryAddress)
+		if (!location?.lat || !location?.long) {
+			toast.error("This address is not accepted, Please enter a valid address")
+			return null
+		}
+		dispatch(setLocation(location))
+	}
+
 	return (
 		<div className='container' >
 			<span className='mt-4' onClick={() => navigate(-1)} ><IoArrowBack size={25} /></span>
@@ -49,7 +60,7 @@ function Checkout() {
 					<p><FaLocationDot /> delivery location</p>
 					<div className='d-flex gap-1 align-items-center' >
 						<input type="text" className='w-100' value={deliveryAddress} onChange={handleChange} />
-						<span className='bg-danger rounded p-1 px-2' ><FaSearch /></span>
+						<span className='bg-danger rounded p-1 px-2' onClick={handleSearch} ><FaSearch /></span>
 						<span className='bg-primary rounded p-1 px-2' onClick={handleCurrentLocation} ><TbCurrentLocation /></span>
 					</div>
 					<div className='overflow-hidden p-2 border mt-3' style={{ height: "300px", width: "500px" }} >
