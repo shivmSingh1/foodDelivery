@@ -49,7 +49,7 @@ function UserDashboard() {
 		try {
 			const res = await axios.get(`${serverUrl}/item/getItemsbyCity?city=${city}`, { withCredentials: true })
 			if (res.status === 200) {
-				setItemsInCity(res?.data?.data?.[0]?.items)
+				setItemsInCity(res?.data?.data)
 			}
 		} catch (error) {
 			console.log(error.message);
@@ -123,7 +123,10 @@ function UserDashboard() {
 						className="d-flex gap-2"
 					>
 						{itemsInCity?.map((item, index) => (
-							<FoodItemsCard key={index} item={item} />
+							// <FoodItemsCard key={index} item={item} />
+							item?.items?.map((i, index) => (
+								<FoodItemsCard key={index} item={i} />
+							))
 						))}
 					</div>
 				</div>

@@ -3,7 +3,10 @@ const mongoose = require("mongoose");
 const shopOrderItemSchema = new mongoose.Schema({
 	item: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: Item
+		ref: "Item"
+	},
+	name: {
+		type: String
 	},
 	price: Number,
 	quantity: Number
@@ -26,7 +29,7 @@ const shopOrderSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
 	user: {
-		type: mongoose.Schema.Types.OrderId,
+		type: mongoose.Schema.Types.ObjectId,
 		ref: "User"
 	},
 	paymentMethod: {
@@ -44,3 +47,7 @@ const orderSchema = new mongoose.Schema({
 	},
 	shopOrder: [shopOrderSchema]
 }, { timestamps: true })
+
+const Order = mongoose.model("Order", orderSchema)
+
+module.exports = Order;

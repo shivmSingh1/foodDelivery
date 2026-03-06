@@ -26,7 +26,8 @@ exports.signup = async (req, res) => {
 			fullname,
 			email,
 			mobile,
-			password: hashPassword
+			password: hashPassword,
+			role
 		})
 
 		const token = await jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
@@ -163,6 +164,9 @@ exports.resetPassword = async (req, res) => {
 exports.authWithGoogle = async (req, res) => {
 	try {
 		const { fullname, email, phone: mobile, role } = req.body;
+		// if (!role) {
+		// 	return errorResponse(res, "role is missing")
+		// }
 		let user = await User.findOne({ email });
 		let isNew = false;
 		if (!user) {

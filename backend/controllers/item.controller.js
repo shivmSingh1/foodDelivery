@@ -111,6 +111,7 @@ exports.getItemsByCity = async (req, res) => {
 		if (!items || items.length <= 0) {
 			errorResponse(res, "no item found in the city")
 		}
+		console.log(items)
 		successResponse(res, "items fetched successfully", items)
 	} catch (error) {
 		serverResponse(res, error, "get item by city error")

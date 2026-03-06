@@ -11,6 +11,7 @@ import axios from 'axios';
 import getCurrentLocation from '../utils/getCurrentLocation';
 import getAddress from '../utils/getAddressByLatLng';
 import { toast } from 'react-toastify';
+import { serverUrl } from '../App';
 
 function Checkout() {
 	const { location, address } = useSelector((state) => state.Map)
@@ -57,6 +58,28 @@ function Checkout() {
 		dispatch(setLocation(location))
 	}
 
+	const handlePlaceOrder = async () => {
+		try {
+			const payload = {
+				paymentMode,
+				deliveryAddress: {
+					text: deliveryAddress,
+					lat: location.lat,
+					long: location.long
+				},
+				totalAmount: totalAmount,
+				cart
+			}
+			const res = await axios.post(`${serverUrl}/order/placeOrder`, payload, { withCredentials: true })
+			if (res.status === 200) {
+				toast.success(res?.data?.message)
+			}
+		} catch (error) {
+			toast.error(error?.response?.data?.message)
+			console.log(error.message)
+		}
+	}
+
 	return (
 		<div className='container' >
 			<span className='mt-4' onClick={() => navigate(-1)} ><IoArrowBack size={25} /></span>
@@ -101,7 +124,7 @@ function Checkout() {
 							<span className='w-100 d-flex justify-content-between px-2 py-0'>Delivery Fees <span>{deliveryFees}</span> </span>
 							<hr />
 							<strong className='w-100 d-flex justify-content-between px-2 py-0 text-danger'>Total <span>{totalPayableAmount}</span> </strong>
-							<button className='btn btn-warning w-100 mt-3 mb-3' >{paymentMode === "cod" ? "Place order" : "Pay now & Place order"}</button>
+							<button className='btn btn-warning w-100 mt-3 mb-3' onClick={() => handlePlaceOrder()} >{paymentMode === "cod" ? "Place order" : "Pay now & Place order"}</button>
 						</div>
 					</div>
 				</div>
