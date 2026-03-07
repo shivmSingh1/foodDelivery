@@ -52,6 +52,7 @@ exports.placeOrder = async (req, res) => {
 					item: i._id,
 					price: i.price,
 					quantity: i.quantity,
+					image: i.image,
 					name: i.name
 				}))
 			}
@@ -84,7 +85,16 @@ exports.getOrders = async (req, res) => {
 		if (!orderList || orderList.length <= 0) {
 			return successResponse(res, "order list is empty")
 		}
-		const itemsByShops = orderList?.[0]?.shopOrder
+
+		// console.log("orderlist", orderList)
+
+		const itemsByShops = {
+			id: orderList?.[0]?._id,
+			order: orderList?.[0]?.shopOrder,
+			date: orderList?.[0]?.createdAt,
+			totalAmount: orderList?.[0]?.totalAmount
+		}
+
 		successResponse(res, "order fetched successfully", itemsByShops)
 	} catch (error) {
 		serverResponse(res, error, "get orders error")

@@ -65,7 +65,7 @@ function Nav({ isUser, isOwner }) {
 										<span className='d-flex position-relative'>
 
 											<span className='border'>
-												<p className='py-0 px-1 m-0'>My Orders</p>
+												<p className='py-0 px-1 m-0'  >My Orders</p>
 											</span>
 
 											<span className='position-absolute top-0 start-100 translate-middle'>
@@ -87,7 +87,7 @@ function Nav({ isUser, isOwner }) {
 									<span className='position-relative' ><CiShoppingCart size={30} /></span>
 									<span className='position-absolute top-0' ><small>{cart?.length}</small></span>
 								</span>
-								<span className='p-1 border ' >
+								<span className='p-1 border ' style={{ cursor: "pointer" }} onClick={() => navigate("/user-orders")} >
 									my orders
 								</span>
 							</>

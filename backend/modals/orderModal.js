@@ -5,6 +5,9 @@ const shopOrderItemSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Item"
 	},
+	image: {
+		type: String
+	},
 	name: {
 		type: String
 	},
