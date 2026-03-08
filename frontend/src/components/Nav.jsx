@@ -65,7 +65,7 @@ function Nav({ isUser, isOwner }) {
 										<span className='d-flex position-relative'>
 
 											<span className='border'>
-												<p className='py-0 px-1 m-0'  >My Orders</p>
+												<p className='py-0 px-1 m-0' onClick={() => navigate('/owner-orders')}  >My Orders</p>
 											</span>
 
 											<span className='position-absolute top-0 start-100 translate-middle'>

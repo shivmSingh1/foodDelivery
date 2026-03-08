@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { cartTotalAmount } from './redux/userSlice';
 import Checkout from './components/Checkout';
 import UserOrder from './components/Orders/UserOrder';
+import OwnerOrderCard from './components/Orders/OwnerOrderCard';
 export const serverUrl = "http://localhost:5000/api"
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/user-orders" element={<UserOrder />} />
+        <Route path="/owner-orders" element={<OwnerOrderCard />} />
       </Routes>
     </>
   )

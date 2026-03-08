@@ -90,7 +90,7 @@ exports.getOrders = async (req, res) => {
 
 		const itemsByShops = {
 			id: orderList?.[0]?._id,
-			order: orderList?.[0]?.shopOrder,
+			order: orderList,
 			date: orderList?.[0]?.createdAt,
 			totalAmount: orderList?.[0]?.totalAmount
 		}
@@ -98,5 +98,46 @@ exports.getOrders = async (req, res) => {
 		successResponse(res, "order fetched successfully", itemsByShops)
 	} catch (error) {
 		serverResponse(res, error, "get orders error")
+	}
+}
+
+exports.getOwnerOrder = async (req, res) => {
+	try {
+		const { userId } = req;
+		console.log(userId)
+		const orders = await Order.find({ shopOrder: { $elemMatch: { owner: userId } } }).populate({
+			path: "user",
+			select: "-password"
+		})
+		const filteredOrders = orders.map(order => ({
+			...order.toObject(),
+			shopOrder: order.shopOrder.filter(
+				shop => shop.owner.toString() === userId
+			)
+		}));
+		if (!filteredOrders || filteredOrders.length <= 0) {
+			return successResponse(res, "order is empty")
+		}
+		successResponse(res, "orders fetched successfully", filteredOrders)
+	} catch (error) {
+		console.log(error.message)
+		serverResponse(res, error, "get owner order error")
+	}
+}
+
+exports.updateOrderStatus = async (req, res) => {
+	try {
+		const { status, orderId } = req.body;
+		if (!status) {
+			return errorResponse(res, "missing status")
+		}
+		const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true, runValidators: true })
+		if (!updatedOrder) {
+			return errorResponse(res, "order not found")
+		}
+		successResponse(res, "order status updated successfully", updatedOrder.status)
+	} catch (error) {
+		console.log(error.message)
+		serverResponse(res, error, "update order error")
 	}
 }

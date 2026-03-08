@@ -48,7 +48,12 @@ const orderSchema = new mongoose.Schema({
 	totalAmount: {
 		type: Number
 	},
-	shopOrder: [shopOrderSchema]
+	shopOrder: [shopOrderSchema],
+	status: {
+		type: String,
+		enum: ["pending", "preparing", "delivered", "out for delivery"],
+		default: "pending"
+	}
 }, { timestamps: true })
 
 const Order = mongoose.model("Order", orderSchema)

@@ -1,17 +1,43 @@
 import React from 'react'
 import OrderItemsCard from './OrderItemsCard'
+import { FaIndianRupeeSign } from 'react-icons/fa6'
 
 function OrdersByShopsCard({ order }) {
+	console.log("order", order)
 	return (
-		<div className='p-4 w-100 bg-light m-2 d-flex flex-column' style={{ minHeight: "100px" }} >
-			<b>{order?.shop?.name}</b>
-			<div className='d-flex gap-1' >
-				{order?.shopOrderItems?.map((item, idx) => (
-					<OrderItemsCard key={idx} item={item} />
-				))}
+		<div className='p-4 w-100 bg-light m-2 mb-4 d-flex flex-column shadow-sm ' style={{ minHeight: "100px" }} >
+			<div className='d-flex justify-content-between p-2' >
+				<div>
+					<h6 className='pb-0 mb-0' >Order #{order?._id}</h6>
+					<small>Date: {new Date(order?.createdAt).toLocaleDateString("en-GB", {
+						day: "numeric",
+						month: "short",
+						year: "numeric"
+					})}</small>
+				</div>
+				<b >Status: <span className='text-primary' >{order?.status}</span></b>
 			</div>
 			<hr />
-			<strong>Sub Total: {order.subTotal}</strong>
+			<div className='d-flex flex-column gap-1 w-100' >
+				{order?.shopOrder?.map((items, idx) => {
+					return <div>
+						<b>{items?.shop?.name}</b>
+						<div className='p-2 d-flex w-100' >
+							{
+								items?.shopOrderItems?.map((i) => (
+									<OrderItemsCard key={idx} item={i} />
+								))
+							}
+						</div>
+						<strong>Sub Total: {items?.subTotal}</strong>
+						<hr />
+					</div>
+				})}
+			</div>
+			<div className='p-2 d-flex align-items-center justify-content-between' >
+				<h4>Total: <FaIndianRupeeSign />{order?.totalAmount}</h4>
+				<button className='btn btn-success' >Track Order</button>
+			</div>
 		</div>
 	)
 }
