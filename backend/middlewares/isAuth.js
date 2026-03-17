@@ -5,7 +5,7 @@ require("dotenv").config()
 
 exports.isAuth = async (req, res, next) => {
 	try {
-		console.log(req)
+		// console.log(req)
 		const token = req.cookies.token || req.headers.authorization.split(" ")[1];
 		if (!token) {
 			return errorResponse(res, "token not found", undefined)

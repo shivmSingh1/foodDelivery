@@ -1,8 +1,12 @@
 import React from 'react'
+import Nav from './Nav'
+
 
 function DeliveryBoyDashboard() {
 	return (
-		<div>deliveryBoyDashboard</div>
+		<div>
+			<Nav isOwner={false} isUser={false} />
+		</div>
 	)
 }
 

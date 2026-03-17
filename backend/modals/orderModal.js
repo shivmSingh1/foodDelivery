@@ -27,7 +27,16 @@ const shopOrderSchema = new mongoose.Schema({
 	subTotal: {
 		type: Number
 	},
-	shopOrderItems: [shopOrderItemSchema]
+	shopOrderItems: [shopOrderItemSchema],
+	assignment: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "DeliveryAssignment",
+		default: null
+	},
+	assignedDeliveryBoy: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User"
+	}
 }, { timestamps: true })
 
 const orderSchema = new mongoose.Schema({

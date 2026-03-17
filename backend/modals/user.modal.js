@@ -30,8 +30,22 @@ const userSchema = new mongoose.Schema({
 	isOtpVerified: {
 		type: Boolean,
 		default: false
+	},
+	location: {
+		type: {
+			type: String,
+			enum: ["Point"],
+			default: "Point"
+		},
+		coordinates: {
+			type: [Number],
+			default: [0, 0]
+			// long,lat
+		}
 	}
 }, { timestamps: true })
+
+userSchema.index({ location: '2dsphere' })
 
 
 module.exports = mongoose.model("User", userSchema);

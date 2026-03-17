@@ -17,10 +17,12 @@ import { cartTotalAmount } from './redux/userSlice';
 import Checkout from './components/Checkout';
 import UserOrder from './components/Orders/UserOrder';
 import OwnerOrderCard from './components/Orders/OwnerOrderCard';
+import UseUpdateLocation from './customHooks/UseUpdateLocation';
 export const serverUrl = "http://localhost:5000/api"
 
 function App() {
   useCurrentUser()
+  UseUpdateLocation()
   UseCurrentCity()
   const { userDetails, cart } = useSelector(state => state.user)
   const dispatch = useDispatch()
