@@ -7,7 +7,7 @@ import axios from 'axios'
 import { serverUrl } from '../../App'
 
 function OrderCard({ order }) {
-	console.log("sdfsfsfsfsddfsdfs", order.status)
+	console.log("sdfsfsfsfsddfsdfs", order)
 	const [status, setStatus] = useState({ value: order?.status, label: order?.status })
 	const [availableBoys, setAvailableBoys] = useState([])
 	const options = [
@@ -23,7 +23,6 @@ function OrderCard({ order }) {
 			if (res.status === 200) {
 				toast.success(res?.data?.message)
 				setAvailableBoys(res?.data?.data?.availableBoys)
-				console.log("resssss", res)
 			}
 		} catch (error) {
 			console.log(error.message)
@@ -58,10 +57,13 @@ function OrderCard({ order }) {
 				{
 					status && status.value === "out for delivery" && (
 						<div>
+							<p>{order?.shopOrder?.[0]?.assignedDeliveryBoy ? (
+								<p>Assignd delivery Boy {order?.shopOrder?.[0]?.assignedDeliveryBoy}</p>
+							) : <p>Availabe delivery boy</p>}</p>
 							{
 								availableBoys.length > 0 && (
 									availableBoys.map((deliveryBoy) => (
-										console.log(deliveryBoy, "tak tak")
+										<p>{deliveryBoy.fullname}</p>
 									))
 								)
 							}

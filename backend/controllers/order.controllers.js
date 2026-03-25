@@ -83,7 +83,7 @@ exports.placeOrder = async (req, res) => {
 exports.getOrders = async (req, res) => {
 	try {
 		const { userId } = req;
-		const orderList = await Order.find({ user: userId }).populate(["shopOrder.shop", "shopOrder.owner"])
+		const orderList = await Order.find({ user: userId }).populate(["shopOrder.shop", "shopOrder.owner", "shopOrder.assignedDeliveryBoy"])
 		if (!orderList || orderList.length <= 0) {
 			return successResponse(res, "order list is empty")
 		}
@@ -230,5 +230,135 @@ exports.updateOrderStatus = async (req, res) => {
 	} catch (error) {
 		console.log(error.message)
 		serverResponse(res, error, "update order error")
+	}
+}
+
+exports.getDeliveryBoyAssignment = async (req, res) => {
+	try {
+		const deliveryBoyId = req.userId;
+		console.log("db id", deliveryBoyId)
+		const assignment = await DeliveryAssignment.find({
+			brodcastedTo: deliveryBoyId,
+			status: "brodcasted"
+		}).populate(["order", "shop"])
+
+		console.log("asss", assignment)
+
+		const formatted = assignment.map((a) => ({
+			assignmentId: a._id,
+			orderId: a.order._id,
+			shopname: a.shop.name,
+			deliveryAddress: a.order.deliveryAddress,
+			items: a.order.shopOrder.find(so => so._id.equals(a.shopOrderId)).shopOrderItems || [],
+			subTotal: a.order.shopOrder.find(so => so._id.equals(a.shopOrderId))?.subTotal
+		}))
+		successResponse(res, "success", formatted)
+	} catch (error) {
+		console.log(error.message)
+		serverResponse(res, error, "get delivery boy assignment error")
+	}
+}
+
+exports.acceptOrder = async (req, res) => {
+	try {
+		const { assignmentId } = req.params;
+		const assignment = await DeliveryAssignment.findById(assignmentId);
+		if (!assignment) {
+			return errorResponse(res, "assignment not found")
+		}
+		if (assignment.status !== "brodcasted") {
+			return errorResponse(res, "'assignment is expired")
+		}
+
+		const alreadyAssigned = await DeliveryAssignment.findOne({
+			assignedTo: req.userId,
+			status: { $nin: ["brodcasted", "completed"] }
+		})
+
+		if (alreadyAssigned) {
+			return errorResponse(res, "You are already assigned to other order")
+		}
+
+		assignment.assignedTo = req.userId;
+		assignment.status = "assigned";
+		assignment.acceptedAt = new Date();
+		await assignment.save();
+
+		const order = await Order.findById(assignment.order)
+		if (!order) {
+			return errorResponse(res, "order not found")
+		}
+
+		const shopOrder = order.shopOrder.id(assignment.shopOrderId)
+		console.log("shhhOrder", shopOrder)
+		shopOrder.assignedDeliveryBoy = req.userId;
+		await order.save()
+
+		successResponse(res, "Order Accepted")
+	} catch (error) {
+		console.log(error.message)
+		serverResponse(res, error, "accept order error")
+	}
+}
+
+exports.getCurrentOrder = async (req, res) => {
+	try {
+		const assignment = await DeliveryAssignment.findOne({
+			assignedTo: req.userId,
+			status: 'assigned'
+		}).populate("shop", "name")
+			.populate("assignedTo", "fullname email mobile location")
+			.populate({
+				path: "order",
+				populate: [{ path: "user", select: "fullname email location mobile" },
+				{
+					path: "shopOrder.shop",
+					select: "name"
+				}
+				]
+			})
+
+		if (!assignment) {
+			return errorResponse(res, "assignment not found")
+		}
+
+		if (!assignment.order) {
+			return errorResponse(res, "order not found")
+		}
+
+		const shopOrder = assignment.order.shopOrder.find(so => String(so._id) == String(assignment.shopOrderId))
+
+		if (!shopOrder) {
+			return errorResponse(res, "shop order not found")
+		}
+
+		let deliveryBoyLocation = { lat: null, lon: null }
+
+		if (assignment.assignedTo.location.coordinates.length == 2) {
+			deliveryBoyLocation.lat = assignment.assignedTo.location.coordinates[1];
+			deliveryBoyLocation.lon = assignment.assignedTo.location.coordinates[0]
+		}
+
+		let customerLocation = { lat: null, lon: null };
+
+		if (assignment.order.deliveryAddress) {
+			customerLocation.lat = assignment.order.deliveryAddress.lattitude;
+			customerLocation.lon = assignment.order.deliveryAddress.longitude;
+		}
+
+		const payload = {
+			_id: assignment.order._id,
+			user: assignment.order.user,
+			shopOrder,
+			deliveryAddress: assignment.order.deliveryAddress,
+			deliveryBoyLocation,
+			customerLocation
+		}
+
+		successResponse(res, "success", payload)
+
+	} catch (error) {
+		console.log(error.message)
+		serverResponse(res, error, "accept order error")
 	}
 }

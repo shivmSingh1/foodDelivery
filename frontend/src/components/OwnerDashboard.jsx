@@ -28,7 +28,7 @@ function OwnerDashboard() {
 	}
 	return (
 		<div className='container'>
-			<Nav isUser={false} isOwner={true} />
+			<Nav isUser={false} isOwner={true} isDeliveryBoy={false} />
 			<div>
 				<div className='d-flex flex-column align-items-center mt-4' >
 					<h4 className='text-center mb-3' >Welcome to {shopDetails?.[0]?.name}</h4>

@@ -8,7 +8,7 @@ import { setUserDetails } from '../redux/userSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function Nav({ isUser, isOwner }) {
+function Nav({ isUser, isOwner, isDeliveryBoy }) {
 	const { userDetails, cart } = useSelector(state => state.user)
 	const { shopDetails } = useSelector(state => state.Shop)
 	const { city } = useSelector(state => state.user)
@@ -49,6 +49,24 @@ function Nav({ isUser, isOwner }) {
 								<div className='ps-2 pe-2'><IoSearchSharp size={15} /></div>
 								<input type="text" name='search' />
 							</div>
+						</div>
+					)
+				}
+				{
+					isDeliveryBoy && (
+						<div className='d-flex gap-2  justify-content-center align-items-center' >
+							{
+								<span className='d-flex position-relative'>
+
+									<span className='border'>
+										<p className='py-0 px-1 m-0' onClick={() => navigate('/owner-orders')}  >My Orders</p>
+									</span>
+
+									<span className='position-absolute top-0 start-100 translate-middle'>
+										<small className=" px-1">0</small>
+									</span>
+								</span>
+							}
 						</div>
 					)
 				}
