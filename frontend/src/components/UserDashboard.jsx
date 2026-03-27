@@ -18,6 +18,7 @@ function UserDashboard() {
 	const { city } = useSelector(state => state.user)
 	const [shopsInCity, setShopsInCity] = useState([])
 	const [itemsInCity, setItemsInCity] = useState([])
+	const [selectedCategory, setSelectedCategory] = useState(null)
 
 	const scrollLeft = () => {
 		categoriesRef.current?.scrollBy({
@@ -64,6 +65,21 @@ function UserDashboard() {
 		}
 	}, [city])
 
+	// Function to get filtered items based on selected category
+	const getFilteredItems = () => {
+		if (!selectedCategory) {
+			return itemsInCity
+		}
+
+		// Filter shops and their items by the selected category
+		return itemsInCity?.map(shop => ({
+			...shop,
+			items: shop?.items?.filter(item =>
+				item?.category?.toLowerCase() === selectedCategory?.name?.toLowerCase()
+			)
+		})).filter(shop => shop?.items?.length > 0)
+	}
+
 	return (
 		<div className="container">
 			<Nav isUser={true} isOwner={false} isDeliveryBoy={false} />
@@ -79,7 +95,20 @@ function UserDashboard() {
 						className="d-flex gap-2 overflow-auto hide-scrollbar smooth-scroll h-100"
 					>
 						{categories?.map((category, index) => (
-							<CategoryCard key={index} category={category} />
+							<div
+								key={index}
+								onClick={() => setSelectedCategory(selectedCategory?.name === category?.name ? null : category)}
+								style={{
+									cursor: "pointer",
+									opacity: selectedCategory?.name === category?.name ? 1 : 0.6,
+									border: selectedCategory?.name === category?.name ? "2px solid #007bff" : "none",
+									borderRadius: "8px",
+									padding: selectedCategory?.name === category?.name ? "4px" : "0px",
+									transition: "all 0.3s ease"
+								}}
+							>
+								<CategoryCard category={category} />
+							</div>
 						))}
 					</div>
 
@@ -118,11 +147,11 @@ function UserDashboard() {
 					className=" mt-5 mb-5"
 					style={{ width: "500px" }}
 				>
-					<h5>Suggested food items</h5>
+					<h5>Suggested food items {selectedCategory && `- ${selectedCategory?.name}`}</h5>
 					<div
 						className="d-flex gap-2"
 					>
-						{itemsInCity?.map((item, index) => (
+						{getFilteredItems()?.map((item, index) => (
 							// <FoodItemsCard key={index} item={item} />
 							item?.items?.map((i, index) => (
 								<FoodItemsCard key={index} item={i} />
