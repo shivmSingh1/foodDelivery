@@ -29,6 +29,17 @@ const deliveryAssignmentSchmea = new mongoose.Schema({
 	},
 	acceptedAt: {
 		type: Date
+	},
+	deliveryOtp: {
+		type: String,
+		default: null
+	},
+	otpExpiresAt: {
+		type: Date,
+		default: null
+	},
+	completedAt: {
+		type: Date
 	}
 }, { timestamps: true })
 

@@ -3,6 +3,7 @@ const Order = require("../modals/orderModal");
 const Shop = require("../modals/shop.modal");
 const userModal = require("../modals/user.modal");
 const { serverResponse, errorResponse, successResponse } = require("../utils/responses")
+const { sendMail } = require("../utils/mail")
 
 exports.placeOrder = async (req, res) => {
 	try {
@@ -362,3 +363,131 @@ exports.getCurrentOrder = async (req, res) => {
 		serverResponse(res, error, "accept order error")
 	}
 }
+
+exports.getOrderById = async (req, res) => {
+	try {
+		const { orderId } = req.params;
+
+		const order = await Order.findById(orderId)
+			.populate("user")
+			.populate({
+				path: "shopOrder.shop",
+				model: "Shop",
+			})
+			.populate({
+				path: "shopOrder.assignedDeliveryBoy",
+				model: "User",
+			})
+			.populate({
+				path: "shopOrder.shopOrderItems.item",
+				model: "Item",
+			})
+			.lean();
+
+		if (!order) {
+			return errorResponse(res, "order not found")
+		}
+
+		return successResponse(res, "order fetched", order)
+
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		});
+	}
+};
+
+exports.sendDeliveryOtp = async (req, res) => {
+	try {
+		const { orderId } = req.body;
+		const deliveryBoyId = req.userId;
+
+		const assignment = await DeliveryAssignment.findOne({
+			order: orderId,
+			assignedTo: deliveryBoyId,
+			status: 'assigned'
+		}).populate("order");
+
+		if (!assignment) {
+			return errorResponse(res, "assignment not found");
+		}
+
+		const order = assignment.order;
+		const user = await userModal.findById(order.user);
+
+		if (!user) {
+			return errorResponse(res, "user not found");
+		}
+
+		// Generate OTP (6 digits)
+		const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+		// Save OTP to assignment with expiration (5 minutes)
+		assignment.deliveryOtp = otp;
+		assignment.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+		await assignment.save();
+
+		// Send OTP via nodemailer (same as reset password)
+		await sendMail(user.email, otp);
+
+		console.log(`OTP sent to ${user.email}: ${otp}`);
+
+		return successResponse(res, "OTP sent to user's email");
+
+	} catch (error) {
+		console.log(error.message);
+		return serverResponse(res, error, "send delivery otp error");
+	}
+};
+
+exports.verifyDeliveryOtp = async (req, res) => {
+	try {
+		const { orderId, otp } = req.body;
+		const deliveryBoyId = req.userId;
+
+		const assignment = await DeliveryAssignment.findOne({
+			order: orderId,
+			assignedTo: deliveryBoyId,
+			status: 'assigned'
+		});
+
+		if (!assignment) {
+			return errorResponse(res, "assignment not found");
+		}
+
+		// Check if OTP exists and is not expired
+		if (!assignment.deliveryOtp) {
+			return errorResponse(res, "OTP was not sent or has expired");
+		}
+
+		if (assignment.otpExpiresAt < new Date()) {
+			return errorResponse(res, "OTP has expired. Request a new one.");
+		}
+
+		// Verify OTP
+		if (assignment.deliveryOtp !== otp) {
+			return errorResponse(res, "Invalid OTP");
+		}
+
+		// Mark assignment as completed
+		assignment.status = "completed";
+		assignment.completedAt = new Date();
+		assignment.deliveryOtp = null;
+		assignment.otpExpiresAt = null;
+		await assignment.save();
+
+		// Update order status to delivered
+		const order = await Order.findById(orderId);
+		if (order) {
+			order.status = "delivered";
+			await order.save();
+		}
+
+		return successResponse(res, "Order marked as delivered successfully");
+
+	} catch (error) {
+		console.log(error.message);
+		return serverResponse(res, error, "verify delivery otp error");
+	}
+};

@@ -1,9 +1,16 @@
 import React from 'react'
 import OrderItemsCard from './OrderItemsCard'
 import { FaIndianRupeeSign } from 'react-icons/fa6'
+import { useNavigate } from 'react-router-dom'
 
 function OrdersByShopsCard({ order }) {
+	const navigate = useNavigate()
 	console.log("order", order)
+
+	const handleTrackOrder = () => {
+		navigate(`/track-order/${order?._id}`)
+	}
+
 	return (
 		<div className='p-4 w-100 bg-light m-2 mb-4 d-flex flex-column shadow-sm ' style={{ minHeight: "100px" }} >
 			<div className='d-flex justify-content-between p-2' >
@@ -36,7 +43,7 @@ function OrdersByShopsCard({ order }) {
 			</div>
 			<div className='p-2 d-flex align-items-center justify-content-between' >
 				<h4>Total: <FaIndianRupeeSign />{order?.totalAmount}</h4>
-				<button className='btn btn-success' >Track Order</button>
+				<button className='btn btn-success' onClick={handleTrackOrder}>Track Order</button>
 			</div>
 		</div>
 	)
