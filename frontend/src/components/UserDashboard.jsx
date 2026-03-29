@@ -12,6 +12,7 @@ import { serverUrl } from '../App';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import FoodItemsCard from './FoodItemsCard';
+import { useNavigate } from 'react-router-dom';
 
 function UserDashboard() {
 	const categoriesRef = useRef()
@@ -19,6 +20,14 @@ function UserDashboard() {
 	const [shopsInCity, setShopsInCity] = useState([])
 	const [itemsInCity, setItemsInCity] = useState([])
 	const [selectedCategory, setSelectedCategory] = useState(null)
+	const navigate = useNavigate();
+	const { searchResults } = useSelector(state => state.user);
+
+	useEffect(() => {
+		if (searchResults?.length > 0) {
+			console.log("Search Results in Dashboard 👉", searchResults);
+		}
+	}, [searchResults]);
 
 	const scrollLeft = () => {
 		categoriesRef.current?.scrollBy({
@@ -83,84 +92,105 @@ function UserDashboard() {
 	return (
 		<div className="container">
 			<Nav isUser={true} isOwner={false} isDeliveryBoy={false} />
-			<div className="d-flex flex-column align-items-center mt-4">
-				<div
-					className="position-relative mb-4"
-					style={{ width: "500px", height: "130px" }}
-				>
-					<h5>Inspiration for your first order</h5>
-					{/* Scrollable Row */}
-					<div
-						ref={categoriesRef}
-						className="d-flex gap-2 overflow-auto hide-scrollbar smooth-scroll h-100"
-					>
-						{categories?.map((category, index) => (
+
+			{searchResults?.length > 0 && (
+				<div className="mt-4" style={{ width: "500px" }}>
+					<h5>Search Results</h5>
+
+					<div className="d-flex flex-wrap gap-3">
+						{searchResults.map((item) => (
+							<FoodItemsCard key={item._id} item={item} />
+						))}
+					</div>
+				</div>
+			)}
+
+			{searchResults?.length === 0 && (
+				<>
+					<div className="d-flex flex-column align-items-center mt-4">
+						<div
+							className="position-relative mb-4"
+							style={{ width: "500px", height: "130px" }}
+						>
+							<h5>Inspiration for your first order</h5>
+							{/* Scrollable Row */}
 							<div
-								key={index}
-								onClick={() => setSelectedCategory(selectedCategory?.name === category?.name ? null : category)}
-								style={{
-									cursor: "pointer",
-									opacity: selectedCategory?.name === category?.name ? 1 : 0.6,
-									border: selectedCategory?.name === category?.name ? "2px solid #007bff" : "none",
-									borderRadius: "8px",
-									padding: selectedCategory?.name === category?.name ? "4px" : "0px",
-									transition: "all 0.3s ease"
-								}}
+								ref={categoriesRef}
+								className="d-flex gap-2 overflow-auto hide-scrollbar smooth-scroll h-100"
 							>
-								<CategoryCard category={category} />
+								{categories?.map((category, index) => (
+									<div
+										key={index}
+										onClick={() => setSelectedCategory(selectedCategory?.name === category?.name ? null : category)}
+										style={{
+											cursor: "pointer",
+											opacity: selectedCategory?.name === category?.name ? 1 : 0.6,
+											border: selectedCategory?.name === category?.name ? "2px solid #007bff" : "none",
+											borderRadius: "8px",
+											padding: selectedCategory?.name === category?.name ? "4px" : "0px",
+											transition: "all 0.3s ease"
+										}}
+									>
+										<CategoryCard category={category} />
+									</div>
+								))}
 							</div>
-						))}
+
+							{/* Left Arrow */}
+							<span
+								className="position-absolute top-50 start-0 arrow-btn"
+								onClick={scrollLeft}
+							>
+								<IoIosArrowBack size={30} />
+							</span>
+
+							{/* Right Arrow */}
+							<span
+								className="position-absolute top-50 end-0 arrow-btn"
+								onClick={scrollRight}
+							>
+								<IoIosArrowForward size={30} />
+							</span>
+						</div>
+
+						<div
+							className="position-relative mt-5 mb-4"
+							style={{ width: "500px", height: "130px" }}
+						>
+							<h5>Best shops in {city}</h5>
+							<div
+								className="d-flex gap-2 overflow-auto hide-scrollbar smooth-scroll h-100"
+							>
+								{shopsInCity?.map((shop, index) => (
+									<div key={index} onClick={() => navigate(`/shop/${shop._id}`)} style={{ cursor: "pointer" }}>
+										<CategoryCard category={shop} />
+									</div>
+								))}
+							</div>
+						</div>
+
+						<div
+							className=" mt-5 mb-5"
+							style={{ width: "500px" }}
+						>
+							<h5>Suggested food items {selectedCategory && `- ${selectedCategory?.name}`}</h5>
+							<div
+								className="d-flex gap-2"
+							>
+								{getFilteredItems()?.map((item, index) => (
+									// <FoodItemsCard key={index} item={item} />
+									item?.items?.map((i, index) => (
+										<FoodItemsCard key={index} item={i} />
+									))
+								))}
+							</div>
+						</div>
+
 					</div>
+				</>
+			)}
 
-					{/* Left Arrow */}
-					<span
-						className="position-absolute top-50 start-0 arrow-btn"
-						onClick={scrollLeft}
-					>
-						<IoIosArrowBack size={30} />
-					</span>
 
-					{/* Right Arrow */}
-					<span
-						className="position-absolute top-50 end-0 arrow-btn"
-						onClick={scrollRight}
-					>
-						<IoIosArrowForward size={30} />
-					</span>
-				</div>
-
-				<div
-					className="position-relative mt-5 mb-4"
-					style={{ width: "500px", height: "130px" }}
-				>
-					<h5>Best shops in {city}</h5>
-					<div
-						className="d-flex gap-2 overflow-auto hide-scrollbar smooth-scroll h-100"
-					>
-						{shopsInCity?.map((shop, index) => (
-							<CategoryCard key={index} category={shop} />
-						))}
-					</div>
-				</div>
-
-				<div
-					className=" mt-5 mb-5"
-					style={{ width: "500px" }}
-				>
-					<h5>Suggested food items {selectedCategory && `- ${selectedCategory?.name}`}</h5>
-					<div
-						className="d-flex gap-2"
-					>
-						{getFilteredItems()?.map((item, index) => (
-							// <FoodItemsCard key={index} item={item} />
-							item?.items?.map((i, index) => (
-								<FoodItemsCard key={index} item={i} />
-							))
-						))}
-					</div>
-				</div>
-
-			</div>
 		</div>
 	)
 }

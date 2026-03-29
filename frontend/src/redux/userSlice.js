@@ -4,7 +4,8 @@ const initialState = {
 	userDetails: null,
 	city: null,
 	cart: [],
-	totalAmount: 0
+	totalAmount: 0,
+	searchResults: [],
 }
 
 export const userSlice = createSlice({
@@ -40,9 +41,12 @@ export const userSlice = createSlice({
 		},
 		cartTotalAmount: (state, action) => {
 			state.totalAmount = state.cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
-		}
+		},
+		setSearchResults: (state, action) => {
+			state.searchResults = action.payload;
+		},
 	}
 })
 
-export const { setUserDetails, setCity, addToCart, removeFromCart, cartTotalAmount } = userSlice.actions;
+export const { setUserDetails, setCity, addToCart, removeFromCart, cartTotalAmount, setSearchResults } = userSlice.actions;
 export default userSlice.reducer;

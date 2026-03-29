@@ -33,14 +33,16 @@ function OrderCard({ order }) {
 		setStatus(e)
 		setOrderStatus(e.value)
 	}
-	useEffect(() => {
-		console.log("avalibale boys", availableBoys)
-	}, [availableBoys])
+
 	return (
 		<div className='border p-4 mb-3' >
 			<h5 className='mb-0 pb-0' >{order?.user?.fullname}</h5>
 			<p className='mb-0 pb-0'>	<small >{order?.user?.email}</small></p>
 			<p className='mb-0 pb-0' ><small >{order?.user?.mobile}</small></p>
+			<p>{order?.paymentMethod !== "cod" ? <div className='d-flex flex-column' >
+				<small>Payment method: {order?.paymentMethod}</small>
+				<small>Payment Status: {order?.payment ? "True" : "False"}</small>
+			</div> : <small>Payment method: {order?.paymentMethod}</small>}</p>
 			<p>{order?.deliveryAddress?.text}</p>
 			<div className='d-flex gap-1' >
 				{

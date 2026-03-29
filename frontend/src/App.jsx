@@ -19,6 +19,7 @@ import UserOrder from './components/Orders/UserOrder';
 import OwnerOrderCard from './components/Orders/OwnerOrderCard';
 import UseUpdateLocation from './customHooks/UseUpdateLocation';
 import UserTrackOrder from './components/Orders/UserTrackOrder';
+import ShopItemsPage from './components/ShopItemsPage';
 export const serverUrl = "http://localhost:5000/api"
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
         <Route path="/user-orders" element={<UserOrder />} />
         <Route path="/owner-orders" element={<OwnerOrderCard />} />
         <Route path="/track-order/:orderId" element={<UserTrackOrder />} />
+        <Route path="/shop/:shopId" element={<ShopItemsPage />} />
       </Routes>
     </>
   )

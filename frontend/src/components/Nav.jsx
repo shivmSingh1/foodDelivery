@@ -4,7 +4,7 @@ import { CiShoppingCart } from "react-icons/ci";
 import { IoSearchSharp } from "react-icons/io5";
 import { useDispatch, useSelector } from 'react-redux';
 import { serverUrl } from '../App';
-import { setUserDetails } from '../redux/userSlice';
+import { setSearchResults, setUserDetails } from '../redux/userSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 	const { shopDetails } = useSelector(state => state.Shop)
 	const { city } = useSelector(state => state.user)
 	const [showLogoutBox, setShowLogoutBox] = useState(false)
+	const [searchQuery, setSearchQuery] = useState("");
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
 
@@ -30,10 +31,38 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 			console.log(error.message, "logout error")
 		}
 	}
+	// useEffect(() => {
+	// 	console.log(cart)
+	// 	console.log(cart?.length)
+	// }, [cart])
+
 	useEffect(() => {
-		console.log(cart)
-		console.log(cart?.length)
-	}, [cart])
+		const delayDebounce = setTimeout(
+			async () => {
+				if (!searchQuery || searchQuery.trim() === "") {
+					dispatch(setSearchResults([]));
+					return;
+				}
+
+				try {
+					const res = await axios.get(
+						`${serverUrl}/item/search-item?query=${searchQuery}&city=${city}`,
+						{ withCredentials: true }
+					);
+
+					if (res.status === 200) {
+						console.log("Live Search 👉", res.data.items);
+						dispatch(setSearchResults(res.data.items));
+					}
+				} catch (error) {
+					console.log(error.message);
+				}
+			},
+			500);
+
+		return () => clearTimeout(delayDebounce);
+	}, [searchQuery, city]);
+
 	return (
 		<div className='container' >
 			<div className='d-flex justify-content-center gap-3 p-2'>
@@ -47,7 +76,12 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 							</div>
 							<div className='d-flex  justify-content-center align-items-center' >
 								<div className='ps-2 pe-2'><IoSearchSharp size={15} /></div>
-								<input type="text" name='search' />
+								<input
+									type="text"
+									name='search'
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+								/>
 							</div>
 						</div>
 					)
