@@ -13,14 +13,17 @@ import CreateEditShop from './components/CreateEditShop';
 import AddItems from './components/AddItems';
 import Cart from './components/Cart';
 import { useEffect } from 'react';
-import { cartTotalAmount } from './redux/userSlice';
+import { cartTotalAmount, setSocket } from './redux/userSlice';
 import Checkout from './components/Checkout';
 import UserOrder from './components/Orders/UserOrder';
 import OwnerOrderCard from './components/Orders/OwnerOrderCard';
 import UseUpdateLocation from './customHooks/UseUpdateLocation';
 import UserTrackOrder from './components/Orders/UserTrackOrder';
 import ShopItemsPage from './components/ShopItemsPage';
+import { io, Socket } from 'socket.io-client';
 export const serverUrl = "http://localhost:5000/api"
+
+export const socket = io("http://localhost:5000");
 
 function App() {
   useCurrentUser()
@@ -28,11 +31,35 @@ function App() {
   UseCurrentCity()
   const { userDetails, cart } = useSelector(state => state.user)
   const dispatch = useDispatch()
+
+
+
   useEffect(() => {
     if (cart) {
       dispatch(cartTotalAmount())
     }
   }, [cart])
+
+  useEffect(() => {
+    if (!userDetails?._id) return;
+
+    if (socket.connected) {
+      console.log("⚡ Already Connected:", socket.id);
+      socket.emit("identity", { userId: userDetails._id });
+    }
+
+    const handleConnect = () => {
+      console.log("✅ Connected:", socket.id);
+      socket.emit("identity", { userId: userDetails._id });
+    };
+
+    socket.on("connect", handleConnect);
+
+    return () => {
+      socket.off("connect", handleConnect);
+    };
+  }, [userDetails?._id])
+
   return (
     <>
       <Routes>

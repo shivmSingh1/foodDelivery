@@ -1,5 +1,5 @@
 import React from 'react'
-import { serverUrl } from '../../App'
+import { serverUrl, socket } from '../../App'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useEffect } from 'react'
@@ -7,9 +7,11 @@ import { useState } from 'react'
 import OrderCard from './OrderCard'
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 function OwnerOrderCard() {
 	const [myOrders, setMyOrders] = useState([])
+	// const { socket } = useSelector((state) => state.user)
 	const navigate = useNavigate()
 	const getOwnerOrders = async () => {
 		try {
@@ -26,6 +28,18 @@ function OwnerOrderCard() {
 	useEffect(() => {
 		getOwnerOrders()
 	}, [])
+
+	useEffect(() => {
+		socket.on("newOrder", (data) => {
+			console.log("new orderrrrrrrrrrrrrrr", data)
+			setMyOrders((prev) => [data, ...prev])
+		})
+
+		return () => {
+			socket.off("newOrder")
+		}
+	}, [])
+
 	return (
 		<div className='container p-4' >
 			<IoMdArrowRoundBack size={25} onClick={() => navigate(-1)} />

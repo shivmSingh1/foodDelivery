@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema({
 			default: [0, 0]
 			// long,lat
 		}
+	},
+	socketIds: {
+		type: [String],
+		default: []
+	},
+	isOnline: {
+		type: Boolean,
+		default: false
 	}
 }, { timestamps: true })
 

@@ -106,6 +106,25 @@ exports.placeOrder = async (req, res) => {
 			shopOrder: shopOrders
 		})
 
+		await newOrder.populate("shopOrder.shop", "name");
+		await newOrder.populate("shopOrder.owner", "name socketIds");
+		await newOrder.populate("user", "name email mobile");
+
+		const io = req.app.get("io");
+
+		if (io) {
+			newOrder.shopOrder.forEach((shopOrder) => {
+				const ownerSocketIds = shopOrder.owner?.socketIds || [];
+
+				ownerSocketIds.forEach((socketId) => {
+					io.to(socketId).emit("newOrder", {
+						...newOrder.toObject(),
+						shopOrder: [shopOrder]
+					});
+				});
+			});
+		}
+
 		return successResponse(res, "success", newOrder)
 	} catch (error) {
 		serverResponse(res, error, "place order error")
@@ -139,6 +158,25 @@ exports.verifyPayment = async (req, res) => {
 
 		await order.populate("shopOrder.shopOrderItems.item", "name image price");
 		await order.populate("shopOrder.shop", "name");
+
+		await order.populate("shopOrder.owner", "name socketIds");
+		await order.populate("user", "name email mobile");
+
+		const io = req.app.get("io");
+
+		if (io) {
+			order.shopOrder.forEach((shopOrder) => {
+				const ownerSocketIds = shopOrder.owner?.socketIds || [];
+
+				ownerSocketIds.forEach((socketId) => {
+					io.to(socketId).emit("newOrder", {
+						...order.toObject(),
+						shopOrder: [shopOrder]
+					});
+				});
+			});
+		}
+
 
 		return res.status(200).json(order);
 
@@ -276,9 +314,42 @@ exports.updateOrderStatus = async (req, res) => {
 				latitude: b.location.coordinates?.[0],
 				mobile: b.mobile
 			}))
+
+			await deliveryAssignment.populate('order')
+			await deliveryAssignment.populate({
+				path: "shop",
+				select: "name"
+			});
+
+			console.log("SHOP:", deliveryAssignment.shop)
+
+			const io = req.app.get('io')
+
+			if (io) {
+				availableBoys.forEach(boy => {
+					const boySocketIds = boy.socketIds || [];
+
+					boySocketIds.forEach((socketId) => {
+						io.to(socketId).emit('newAssignment', {
+							assignmentId: deliveryAssignment._id,
+							orderId: deliveryAssignment.order._id,
+							shopname: deliveryAssignment.shop?.name || "",
+							deliveryAddress: deliveryAssignment.order.deliveryAddress,
+
+							items: deliveryAssignment.order.shopOrder.find(so =>
+								so._id.equals(deliveryAssignment.shopOrderId)
+							).shopOrderItems || [],
+
+							subTotal: deliveryAssignment.order.shopOrder.find(so => so._id.equals(deliveryAssignment.shopOrderId))?.subTotal
+						});
+					});
+				});
+			}
+
 		}
 
-		console.log("payload", deliveryBoysPayload)
+
+		await updatedOrder.populate("user", "socketIds")
 
 		await updatedOrder.save()
 
@@ -290,6 +361,21 @@ exports.updateOrderStatus = async (req, res) => {
 		if (!updatedShopOrder) {
 			return errorResponse(res, "shop order not found after update")
 		}
+
+		const io = req.app.get("io");
+
+		const userSocketIds = updatedOrder?.user?.socketIds || [];
+
+		const payload = {
+			type: "ORDER_STATUS_UPDATED",
+			orderId: updatedOrder._id,
+			status: updatedOrder.status,
+			updatedAt: updatedOrder.updatedAt
+		};
+
+		userSocketIds.forEach((socketId) => {
+			io.to(socketId).emit("order:status:update", payload);
+		});
 
 		successResponse(res, "order status updated successfully", {
 			shopOrder: updatedShopOrder,
@@ -312,7 +398,7 @@ exports.getDeliveryBoyAssignment = async (req, res) => {
 			status: "brodcasted"
 		}).populate(["order", "shop"])
 
-		console.log("asss", assignment)
+		// console.log("asss", assignment)
 
 		const formatted = assignment.map((a) => ({
 			assignmentId: a._id,

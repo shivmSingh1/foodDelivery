@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import axios from 'axios'
-import { serverUrl } from '../App'
+import { serverUrl, socket } from '../App'
 import { useState } from 'react'
 import AssignmentCard from './deliveryboy/AssignmentCard'
 import DeliveryboyTraking from './deliveryboy/DeliveryboyTraking'
@@ -89,8 +89,19 @@ function DeliveryBoyDashboard() {
 	}, [userDetails])
 
 	useEffect(() => {
-		console.log("assignment", assignment)
-	}, [assignment])
+		const handleNewAssignment = (data) => {
+			console.log(" New Assignment:", data);
+			setAssignments(prev => [data, ...prev]);
+
+			toast.success("New delivery assignment received 🚴");
+		};
+
+		socket.on("newAssignment", handleNewAssignment);
+
+		return () => {
+			socket.off("newAssignment", handleNewAssignment);
+		};
+	}, []);
 
 	return (
 		<div className='container' >

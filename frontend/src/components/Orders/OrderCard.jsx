@@ -4,7 +4,7 @@ import Select from 'react-select'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import axios from 'axios'
-import { serverUrl } from '../../App'
+import { serverUrl, socket } from '../../App'
 
 function OrderCard({ order }) {
 	console.log("sdfsfsfsfsddfsdfs", order)
@@ -33,6 +33,8 @@ function OrderCard({ order }) {
 		setStatus(e)
 		setOrderStatus(e.value)
 	}
+
+
 
 	return (
 		<div className='border p-4 mb-3' >

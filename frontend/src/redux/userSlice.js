@@ -6,6 +6,7 @@ const initialState = {
 	cart: [],
 	totalAmount: 0,
 	searchResults: [],
+	socket: null
 }
 
 export const userSlice = createSlice({
@@ -45,8 +46,11 @@ export const userSlice = createSlice({
 		setSearchResults: (state, action) => {
 			state.searchResults = action.payload;
 		},
+		setSocket: (state, action) => {
+			state.socket = action.payload;
+		},
 	}
 })
 
-export const { setUserDetails, setCity, addToCart, removeFromCart, cartTotalAmount, setSearchResults } = userSlice.actions;
+export const { setUserDetails, setCity, addToCart, removeFromCart, cartTotalAmount, setSearchResults, setSocket } = userSlice.actions;
 export default userSlice.reducer;

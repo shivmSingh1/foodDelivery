@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
-import { serverUrl } from '../../App';
+import { serverUrl, socket } from '../../App';
 import OrdersByShopsCard from './OrdersByShopsCard';
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FaRupeeSign } from 'react-icons/fa';
@@ -25,6 +25,28 @@ function UserOrder() {
 	useEffect(() => {
 		getUserOrder()
 	}, [])
+
+	useEffect(() => {
+		const handleUpdate = (data) => {
+			if (data.type === "ORDER_STATUS_UPDATED") {
+				setOrders(prev => ({
+					...prev,
+					order: prev.order.map(o =>
+						o._id === data.orderId
+							? { ...o, status: data.status }
+							: o
+					)
+				}))
+			}
+		};
+
+		socket.on("order:status:update", handleUpdate);
+
+		return () => {
+			socket.off("order:status:update", handleUpdate);
+		};
+	}, []);
+
 	return (
 		<div className='container' >
 			<IoMdArrowRoundBack className='mt-4' size={25} onClick={() => navigate(-1)} />
