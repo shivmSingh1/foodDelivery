@@ -66,7 +66,9 @@ function Checkout() {
 				toast.success(res.data.message)
 				navigate("/user-orders")
 			} else {
-				// Razorpay logic same
+				const orderId = res?.data?.orderId
+				const razorOrder = res?.data?.razorOrder
+				openRazorpayWindow(orderId, razorOrder)
 			}
 
 		} catch (error) {
