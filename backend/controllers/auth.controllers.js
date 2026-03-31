@@ -244,11 +244,18 @@ exports.authWithGoogle = async (req, res) => {
 			{ expiresIn: "7d" }
 		);
 
+		// res.cookie("token", token, {
+		// 	secure: false,
+		// 	sameSite: "strict",
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
+		// 	httpOnly: true
+		// });
+
 		res.cookie("token", token, {
-			secure: false,
-			sameSite: "strict",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			httpOnly: true
+			httpOnly: true,
+			secure: true,          //  MUST in production (HTTPS)
+			sameSite: "none",      // cross-origin ke liye
+			maxAge: 7 * 24 * 60 * 60 * 1000
 		});
 
 		const userObj = user.toObject();
