@@ -1,59 +1,54 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Nav from './Nav'
-import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import { serverUrl, socket } from '../App'
-import { useState } from 'react'
 import AssignmentCard from './deliveryboy/AssignmentCard'
 import DeliveryboyTraking from './deliveryboy/DeliveryboyTraking'
 
-
 function DeliveryBoyDashboard() {
+
 	const { userDetails } = useSelector((state) => state.user)
+
 	const [assignment, setAssignments] = useState([])
 	const [currentOrder, setCurrentOrder] = useState(null)
 	const [showOtpModal, setShowOtpModal] = useState(false)
 	const [otp, setOtp] = useState('')
 	const [loading, setLoading] = useState(false)
 
+	// 🔥 Fetch Assignments
 	const fetchAssignments = async () => {
 		try {
 			const res = await axios.get(`${serverUrl}/order/get-assignment`, { withCredentials: true })
-			if (res.status == 200) {
-				toast.success("assignment fetched");
-				setAssignments(res?.data?.data)
-			}
-		} catch (error) {
-			console.log(error.message);
-			toast.error(error.response.data.message)
-		}
-	}
-
-	const fetchCurrentOrder = async () => {
-		try {
-			const res = await axios.get(`${serverUrl}/order/getCurrentOrder`, { withCredentials: true })
 			if (res.status === 200) {
-				console.log("current order", res)
-				setCurrentOrder(res?.data?.data)
+				setAssignments(res.data.data)
 			}
 		} catch (error) {
-			console.log(error.message);
 			toast.error(error?.response?.data?.message)
 		}
 	}
 
+	// 🔥 Fetch Current Order
+	const fetchCurrentOrder = async () => {
+		try {
+			const res = await axios.get(`${serverUrl}/order/getCurrentOrder`, { withCredentials: true })
+			if (res.status === 200) {
+				setCurrentOrder(res.data.data)
+			}
+		} catch (error) {
+			toast.error(error?.response?.data?.message)
+		}
+	}
+
+	// 🔥 OTP
 	const requestOtp = async () => {
 		try {
 			setLoading(true)
-			const res = await axios.post(`${serverUrl}/order/send-delivery-otp`, { orderId: currentOrder?._id }, { withCredentials: true })
-			if (res.status === 200) {
-				toast.success("OTP sent to user's phone");
-				setShowOtpModal(true)
-			}
+			await axios.post(`${serverUrl}/order/send-delivery-otp`, { orderId: currentOrder?._id }, { withCredentials: true })
+			setShowOtpModal(true)
+			toast.success("OTP sent")
 		} catch (error) {
-			console.log(error.message);
 			toast.error(error?.response?.data?.message)
 		} finally {
 			setLoading(false)
@@ -62,21 +57,22 @@ function DeliveryBoyDashboard() {
 
 	const verifyOtpAndDeliver = async () => {
 		try {
-			if (!otp.trim()) {
-				toast.error("Please enter OTP");
-				return;
-			}
+			if (!otp.trim()) return toast.error("Enter OTP")
+
 			setLoading(true)
-			const res = await axios.post(`${serverUrl}/order/verify-delivery-otp`, { orderId: currentOrder?._id, otp }, { withCredentials: true })
-			if (res.status === 200) {
-				toast.success("Order marked as delivered");
-				setShowOtpModal(false)
-				setOtp('')
-				fetchCurrentOrder();
-				fetchAssignments();
-			}
+
+			await axios.post(`${serverUrl}/order/verify-delivery-otp`,
+				{ orderId: currentOrder?._id, otp },
+				{ withCredentials: true }
+			)
+
+			toast.success("Delivered ✅")
+			setShowOtpModal(false)
+			setOtp("")
+			fetchCurrentOrder()
+			fetchAssignments()
+
 		} catch (error) {
-			console.log(error.message);
 			toast.error(error?.response?.data?.message)
 		} finally {
 			setLoading(false)
@@ -89,102 +85,123 @@ function DeliveryBoyDashboard() {
 	}, [userDetails])
 
 	useEffect(() => {
-		const handleNewAssignment = (data) => {
-			console.log(" New Assignment:", data);
-			setAssignments(prev => [data, ...prev]);
-
-			toast.success("New delivery assignment received 🚴");
-		};
-
-		socket.on("newAssignment", handleNewAssignment);
-
-		return () => {
-			socket.off("newAssignment", handleNewAssignment);
-		};
-	}, []);
+		socket.on("newAssignment", (data) => {
+			setAssignments(prev => [data, ...prev])
+			toast.success("New Order 🚴")
+		})
+		return () => socket.off("newAssignment")
+	}, [])
 
 	return (
-		<div className='container' >
-			<Nav isOwner={false} isUser={false} isDeliveryBoy={true} />
-			<div className='d-flex align-items-center mt-2 flex-column' >
-				<div className='border shadow-md p-3 d-flex align-items-center flex-column w-50' >
-					<h5>Welcome {userDetails?.fullname}</h5>
-					<p>Lat:{userDetails?.location?.coordinates[1]}&nbsp;Lon:{userDetails?.location?.coordinates[0]}</p>
+		<div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+
+			<Nav isDeliveryBoy={true} />
+
+			<div className="container py-3">
+
+				{/* 🔥 Profile */}
+				<div className="bg-white p-3 rounded shadow-sm mb-3 text-center">
+					<h6 className="fw-bold mb-1">Welcome {userDetails?.fullname}</h6>
+					<p className="small text-muted mb-0">
+						📍 {userDetails?.location?.coordinates?.[1]}, {userDetails?.location?.coordinates?.[0]}
+					</p>
 				</div>
-				<div className='border shadow-md p-3 d-flex align-items-center flex-column mt-2 w-50' >
-					<h5>Available orders</h5>
-					<div className='d-flex flex-column gap-2 p-2' >
-						{
-							assignment && (
-								assignment.map((assign, index) => (
-									<AssignmentCard key={index} fetchCurrentOrder={fetchCurrentOrder} assign={assign} />
-								))
-							)
-						}
+
+				{/* 🔥 Assignments */}
+				<div className="bg-white p-3 rounded shadow-sm mb-3">
+
+					<h6 className="fw-bold mb-2">Available Orders</h6>
+
+					{
+						assignment.length === 0 && (
+							<p className="small text-muted">No orders available</p>
+						)
+					}
+
+					<div className="d-flex flex-column gap-2">
+						{assignment.map((assign, i) => (
+							<AssignmentCard key={i} assign={assign} fetchCurrentOrder={fetchCurrentOrder} />
+						))}
 					</div>
+
 				</div>
+
+				{/* 🔥 Current Order */}
 				{
 					currentOrder && (
-						<>
-							<div className='border shadow-md p-3 d-flex align-items-center flex-column mt-2 w-50' >
-								<h5>Current order</h5>
-								<div className='d-flex flex-column gap-2 p-2' >
-									<p>{currentOrder?.shopOrder?.shop?.name}</p>
-									<p>{currentOrder?.deliveryAddress?.text}</p>
-									<p>{currentOrder?.shopOrder?.shopOrderItems?.length} items | {currentOrder.shopOrder?.subTotal}</p>
-								</div>
-								<div style={{ width: "400px" }} >
-									<DeliveryboyTraking currentOrder={currentOrder} />
-									<button
-										className='btn btn-success w-100 mt-3'
-										onClick={requestOtp}
-										disabled={loading}
-									>
-										{loading ? 'Sending OTP...' : 'Mark as Delivered'}
-									</button>
-								</div>
+						<div className="bg-white p-3 rounded shadow-sm">
+
+							<h6 className="fw-bold mb-2">Current Order</h6>
+
+							<div className="small mb-2">
+								<p className="mb-1"><b>{currentOrder?.shopOrder?.shop?.name}</b></p>
+								<p className="mb-1 text-muted">{currentOrder?.deliveryAddress?.text}</p>
+								<p className="mb-0 text-muted">
+									{currentOrder?.shopOrder?.shopOrderItems?.length} items • ₹{currentOrder?.shopOrder?.subTotal}
+								</p>
 							</div>
 
-							{showOtpModal && (
-								<div className='position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center' style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000 }}>
-									<div className='bg-white p-4 rounded' style={{ width: '400px' }}>
-										<h5 className='mb-3'>Enter OTP</h5>
-										<p className='text-muted mb-3'>An OTP has been sent to the user. Please ask the user to share it.</p>
-										<input
-											type='text'
-											className='form-control mb-3'
-											placeholder='Enter 6-digit OTP'
-											value={otp}
-											onChange={(e) => setOtp(e.target.value)}
-											disabled={loading}
-											maxLength='6'
-										/>
-										<div className='d-flex gap-2'>
-											<button
-												className='btn btn-secondary flex-grow-1'
-												onClick={() => {
-													setShowOtpModal(false)
-													setOtp('')
-												}}
-												disabled={loading}
-											>
-												Cancel
-											</button>
-											<button
-												className='btn btn-success flex-grow-1'
-												onClick={verifyOtpAndDeliver}
-												disabled={loading}
-											>
-												{loading ? 'Verifying...' : 'Submit'}
-											</button>
-										</div>
-									</div>
-								</div>
-							)}
-						</>
+							<div style={{ height: "250px" }}>
+								<DeliveryboyTraking currentOrder={currentOrder} />
+							</div>
+
+							<button
+								className="btn w-100 mt-3"
+								style={{
+									background: "#FF4D4F",
+									color: "#fff",
+									borderRadius: "10px"
+								}}
+								onClick={requestOtp}
+								disabled={loading}
+							>
+								{loading ? "Sending OTP..." : "Mark as Delivered"}
+							</button>
+
+						</div>
 					)
 				}
+
 			</div>
+
+			{/* 🔥 OTP MODAL */}
+			{
+				showOtpModal && (
+					<div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+						style={{ background: "rgba(0,0,0,0.5)", zIndex: 999 }}
+					>
+						<div className="bg-white p-4 rounded" style={{ width: "320px" }}>
+
+							<h6 className="fw-bold mb-2">Enter OTP</h6>
+							<p className="small text-muted mb-3">Ask customer for OTP</p>
+
+							<input
+								className="form-control mb-3"
+								value={otp}
+								onChange={(e) => setOtp(e.target.value)}
+								maxLength={6}
+							/>
+
+							<div className="d-flex gap-2">
+								<button className="btn btn-light w-50"
+									onClick={() => setShowOtpModal(false)}>
+									Cancel
+								</button>
+
+								<button
+									className="btn w-50"
+									style={{ background: "#FF4D4F", color: "#fff" }}
+									onClick={verifyOtpAndDeliver}
+								>
+									Submit
+								</button>
+							</div>
+
+						</div>
+					</div>
+				)
+			}
+
 		</div>
 	)
 }

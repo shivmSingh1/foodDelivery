@@ -1,111 +1,152 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { MdOutlineStar, MdOutlineStarBorder } from "react-icons/md";
 import { LiaRupeeSignSolid } from "react-icons/lia";
-import { CiShoppingCart } from 'react-icons/ci';
 import { MdAdd } from "react-icons/md";
 import { RiSubtractFill } from "react-icons/ri";
-import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, removeFromCart } from '../redux/userSlice';
-import { useEffect } from 'react';
 
 function FoodItemsCard({ item }) {
+
 	const dispatch = useDispatch()
 	const { cart } = useSelector((state) => state.user)
+
 	const [cartItemNo, setCartItemNo] = useState(0)
+
+	// ⭐ Rating UI
 	let stars = [];
-	let rating = 2;
+	let rating = 4;
+
 	for (let i = 1; i <= 5; i++) {
-		if (i <= rating) {
-			stars.push(<MdOutlineStar key={i} />)
-		} else {
-			stars.push(<MdOutlineStarBorder key={i} />)
-		}
+		stars.push(i <= rating ? <MdOutlineStar key={i} /> : <MdOutlineStarBorder key={i} />)
 	}
 
-	const setItemQuantity = (item) => {
-		const cartItem = cart?.find((c, i) => (
-			c.id === item._id
-		))
-		if (cartItem && cartItem.quantity > 0) {
-			setCartItemNo(cartItem?.quantity)
-		}
+	// 🔥 Sync cart
+	const setItemQuantity = () => {
+		const cartItem = cart?.find(c => c.id === item._id)
+		if (cartItem) setCartItemNo(cartItem.quantity)
+		else setCartItemNo(0)
 	}
 
 	useEffect(() => {
-		if (cart) {
-			setItemQuantity(item)
-		}
+		setItemQuantity()
 	}, [cart])
 
-	const handleAddToCart = (item) => {
-		dispatch(addToCart(
-			{
-				id: item?._id,
-				name: item?.name,
-				price: item?.price,
-				image: item?.image,
-				shop: item?.shop,
-				quantity: cartItemNo + 1,
-				foodType: item?.foodType
-			}
-		))
-	}
-	const handleIncrement = () => {
-		setCartItemNo((prev) => prev + 1);
-		handleAddToCart(item)
-	}
-	const handleRemoveFromCart = (item) => {
-		console.log(cartItemNo - 1)
-		console.log(item?._id, "yeee")
-		dispatch(removeFromCart({
+	// 🔥 Add
+	const handleAdd = () => {
+		dispatch(addToCart({
 			id: item?._id,
-			quantity: cartItemNo - 1
+			name: item?.name,
+			price: item?.price,
+			image: item?.image,
+			shop: item?.shop,
+			quantity: cartItemNo + 1,
+			foodType: item?.foodType
 		}))
 	}
+
+	// 🔥 Increment
+	const handleIncrement = () => {
+		setCartItemNo(prev => prev + 1)
+		handleAdd()
+	}
+
+	// 🔥 Decrement
 	const handleDecrement = () => {
 		if (cartItemNo > 0) {
-			setCartItemNo((prev) => prev - 1)
+			setCartItemNo(prev => prev - 1)
+			dispatch(removeFromCart({
+				id: item?._id,
+				quantity: cartItemNo - 1
+			}))
 		}
-		handleRemoveFromCart(item)
 	}
+
 	return (
 		<div
-			className='d-flex flex-column border rounded p-2'
-			style={{ width: "150px" }}
+			className="h-100 d-flex flex-column"
+			style={{
+				borderRadius: "14px",
+				overflow: "hidden",
+				background: "#fff",
+				boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+				transition: "0.3s"
+			}}
 		>
-			<div>
+
+			{/* 🔥 Image */}
+			<div style={{ height: "140px", overflow: "hidden" }}>
 				<img
 					src={item?.image}
 					alt={item?.name}
-					className="object-fit-cover w-100"
-					style={{ height: "100px" }}
+					className="w-100 h-100 object-fit-cover"
+					style={{ transition: "0.3s" }}
 				/>
 			</div>
 
-			<p className='text-truncate mb-0 pb-0'>
-				{item?.name}
-			</p>
+			{/* 🔥 Content */}
+			<div className="p-2 d-flex flex-column flex-grow-1">
 
-			<span className="text-primary">
-				{stars}
-			</span>
+				{/* Name */}
+				<p className="fw-semibold mb-1 text-truncate small">
+					{item?.name}
+				</p>
 
+				{/* Rating */}
+				<div className="text-warning small mb-1">
+					{stars}
+				</div>
 
+				{/* Price + Cart */}
+				<div className="d-flex justify-content-between align-items-center mt-auto">
 
+					<span className="fw-bold d-flex align-items-center small">
+						<LiaRupeeSignSolid />
+						{item?.price}
+					</span>
 
-			<div className='d-flex justify-content-between' >
-				<small className='d-flex align-items-center'><LiaRupeeSignSolid />{item?.price}</small>
-				<small className='p-1 ms-2 rounded border d-flex gap-1 align-items-center justify-content-center' >
-					<span style={{ cursor: "pointer" }} onClick={handleDecrement} ><RiSubtractFill /></span>
-					<span>{cartItemNo}</span>
-					<span style={{ cursor: "pointer" }} onClick={handleIncrement} ><MdAdd /></span>
-					<span  ><CiShoppingCart /></span>
-				</small>
+					{/* 🔥 Add / Quantity */}
+					{
+						cartItemNo === 0 ? (
+							<button
+								className="btn btn-sm"
+								style={{
+									background: "#FF4D4F",
+									color: "#fff",
+									borderRadius: "8px",
+									fontSize: "12px",
+									padding: "4px 10px"
+								}}
+								onClick={handleIncrement}
+							>
+								Add
+							</button>
+						) : (
+							<div
+								className="d-flex align-items-center gap-2 px-2"
+								style={{
+									border: "1px solid #ddd",
+									borderRadius: "8px"
+								}}
+							>
+								<RiSubtractFill
+									style={{ cursor: "pointer" }}
+									onClick={handleDecrement}
+								/>
+								<span className="small">{cartItemNo}</span>
+								<MdAdd
+									style={{ cursor: "pointer" }}
+									onClick={handleIncrement}
+								/>
+							</div>
+						)
+					}
+
+				</div>
+
 			</div>
 		</div>
 	)
 }
 
 export default FoodItemsCard
-

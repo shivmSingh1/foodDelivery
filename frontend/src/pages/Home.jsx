@@ -6,8 +6,10 @@ import OwnerDashboard from '../components/OwnerDashboard.jsx'
 
 function Home() {
 	const { userDetails } = useSelector(state => state.user)
+
 	return (
-		<div className='container' >
+		<div className='container'> {/* ❌ container remove */}
+
 			{
 				userDetails?.role === "user" && <UserDashboard />
 			}

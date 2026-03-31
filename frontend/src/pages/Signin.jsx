@@ -1,85 +1,180 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from "axios"
-import { useState } from 'react';
 import { serverUrl } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
 import useCurrentUser from '../customHooks/useCurrentUser';
+import { FcGoogle } from "react-icons/fc";
+import { useDispatch } from "react-redux";
+import { setUserDetails as setDetails } from "../redux/userSlice";
 
 function Signin() {
+
 	const [userDetails, setUserDetails] = useState({
 		email: "",
 		password: "",
 	})
+	const dispatch = useDispatch();
 
 	const navigate = useNavigate()
 
 	const handleChange = (e) => {
-		const name = e.target.name;
-		const value = e.target.value;
-		setUserDetails((prev) => ({
-			...prev, [name]: value
-		}
-		))
+		const { name, value } = e.target;
+		setUserDetails(prev => ({ ...prev, [name]: value }))
 	}
 
 	const signin = async (e) => {
 		e.preventDefault();
 		try {
-			const res = await axios.post(`${serverUrl}/auth/login`, { ...userDetails }, { withCredentials: true })
+			const res = await axios.post(`${serverUrl}/auth/login`, userDetails, { withCredentials: true })
+			console.log("FULL RESPONSE 👉", res)
+			console.log("DATA 👉", res.data)
 			if (res.status === 200) {
+				dispatch(setDetails(res?.data?.data))
 				navigate("/")
 			}
 		} catch (error) {
-			console.log("signup error", error.message)
+			console.log("signin error", error.message)
 		}
 	}
 
 	const signinWithGoogle = async () => {
 		try {
-			console.log("here")
 			const provider = new GoogleAuthProvider()
 			const result = await signInWithPopup(auth, provider)
-			try {
-				const details = {
-					email: result?.user?.email
-				}
-				const res = await axios.post(`${serverUrl}/auth/auth-google`, details, { withCredentials: true })
-				if (res.status === 200) {
-					navigate("/")
-				}
-			} catch (error) {
-				console.log("auth with google error", error.message)
+
+			const res = await axios.post(`${serverUrl}/auth/auth-google`, {
+				email: result?.user?.email
+			}, { withCredentials: true })
+			if (res.status === 200) {
+				dispatch(setDetails(res.data.data))
+				console.log("tuk tuk", res?.data?.data)
+				navigate("/")
 			}
 
 		} catch (error) {
 			console.log(error.message)
 		}
 	}
-	useCurrentUser()
+
 	return (
-		<div className='container' >
-			<form onSubmit={signin} className='d-flex flex-column' >
+		<div
+			className="d-flex justify-content-center align-items-center"
+			style={{
+				minHeight: "100vh",
+				background: "#f8f9fa"
+			}}
+		>
 
-				<div className='mb-2'>
-					<label htmlFor="email">Email</label>
-					<input className='me-4' type="email" name="email" value={userDetails.email} onChange={(e) => handleChange(e)} />
+			<div
+				className="bg-white p-4 p-md-5"
+				style={{
+					borderRadius: "16px",
+					width: "100%",
+					maxWidth: "400px",
+					boxShadow: "0 8px 25px rgba(0,0,0,0.08)"
+				}}
+			>
+
+				{/* 🔥 Heading */}
+				<h3 className="fw-bold mb-3 text-center" style={{ color: "#FF4D4F" }}>
+					Welcome Back 👋
+				</h3>
+
+				<p className="text-muted text-center mb-4 small">
+					Login to continue ordering your favorite food
+				</p>
+
+				{/* 🔥 Form */}
+				<form onSubmit={signin}>
+
+					{/* Email */}
+					<div className="mb-3">
+						<label className="form-label small">Email</label>
+						<input
+							type="email"
+							name="email"
+							value={userDetails.email}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter your email"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
+
+					{/* Password */}
+					<div className="mb-2">
+						<label className="form-label small">Password</label>
+						<input
+							type="password"
+							name="password"
+							value={userDetails.password}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter password"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
+
+					{/* Reset */}
+					<div className="text-end mb-3">
+						<span
+							className="small text-danger"
+							style={{ cursor: "pointer" }}
+							onClick={() => navigate("/forgot-password")}
+						>
+							Forgot Password?
+						</span>
+					</div>
+
+					{/* Submit */}
+					<button
+						type="submit"
+						className="btn w-100 mb-3"
+						style={{
+							backgroundColor: "#FF4D4F",
+							color: "#fff",
+							borderRadius: "10px",
+							padding: "10px",
+							fontWeight: "500"
+						}}
+					>
+						Login
+					</button>
+
+				</form>
+
+				{/* Divider */}
+				<div className="text-center my-3 text-muted small">
+					OR
 				</div>
 
-				<div className='mb-2'>
-					<label htmlFor="password">Password</label>
-					<input className='me-4' type="password" name="password" value={userDetails.password} onChange={(e) => handleChange(e)} />
-				</div>
+				{/* Google Login */}
+				<button
+					onClick={signinWithGoogle}
+					className="btn w-100 d-flex align-items-center justify-content-center gap-2"
+					style={{
+						border: "1px solid #ddd",
+						borderRadius: "10px",
+						padding: "10px"
+					}}
+				>
+					<FcGoogle size={20} />
+					Sign in with Google
+				</button>
 
-				<h5 style={{ cursor: "pointer" }} onClick={() => navigate("/forgot-password")} >Reset Password</h5>
+				{/* Signup */}
+				<p className="text-center mt-4 small">
+					Don’t have an account?{" "}
+					<span
+						style={{ color: "#FF4D4F", cursor: "pointer", fontWeight: "500" }}
+						onClick={() => navigate("/signup")}
+					>
+						Signup
+					</span>
+				</p>
 
-				<input className='mb-2' onClick={signinWithGoogle} type="button" value="signin with google" />
-
-				<input type="submit" value="submit" />
-			</form>
-			<div className='m-2' >
-				<p>don't have an account? <strong onClick={() => navigate("/signup")} >Signup</strong></p>
 			</div>
 		</div>
 	)

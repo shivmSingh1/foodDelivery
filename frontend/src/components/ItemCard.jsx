@@ -1,46 +1,93 @@
 import axios from 'axios'
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { serverUrl } from '../App'
-import { useDispatch } from 'react-redux'
-import { setShopDetails } from '../redux/shopSlice'
-import UseGetShops from '../customHooks/UseGetShops'
+import { FaEdit, FaTrash } from "react-icons/fa";
 import DeleteModal from './DeleteModal'
 
 function ItemCard({ item }) {
-	const dispatch = useDispatch()
-	const navigate = useNavigate()
-	const [modalShow, setModalShow] = React.useState(false);
 
-	const handleEdit = async () => {
-		try {
-			const res = await axios.delete(`${serverUrl}/item/delete-tem`, { withCredentials: true })
-			if (res?.status === 200) {
-				toast.success(res?.data?.message)
-			}
-		} catch (error) {
-			console.log(error.message)
-			toast.error(error?.response?.data?.message)
-		}
-	}
+	const navigate = useNavigate()
+	const [modalShow, setModalShow] = useState(false)
+
 	return (
-		<div className='broder shadow p-4 d-flex mb-2' style={{ width: "500px" }} >
-			<img src={item?.image} alt={item?.name} width={100} />
-			<div className='d-flex flex-column gap-1 ms-3' style={{ width: "100%" }} >
-				<strong>{item?.name}</strong>
-				<p>{item?.price}</p>
-				<p>{item?.category}, &nbsp;{item?.foodType}</p>
-				<div className='d-flex ms-auto gap-3' >
-					<span onClick={() => navigate(`/add-item/${item?._id}`)} >edit</span>
-					<span onClick={() => setModalShow(true)} >delete</span>
-				</div>
+		<div
+			className="bg-white p-2 p-md-3 h-100"
+			style={{
+				borderRadius: "12px",
+				boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+				transition: "0.3s"
+			}}
+		>
+
+			{/* 🔥 Image */}
+			<div style={{ height: "120px", overflow: "hidden" }}>
+				<img
+					src={item?.image}
+					alt={item?.name}
+					className="w-100 h-100 object-fit-cover"
+					style={{ borderRadius: "10px" }}
+				/>
 			</div>
+
+			{/* 🔥 Content */}
+			<div className="mt-2 d-flex flex-column">
+
+				{/* Name */}
+				<p className="fw-semibold mb-1 small text-truncate">
+					{item?.name}
+				</p>
+
+				{/* Price */}
+				<p className="fw-bold mb-1 small text-danger">
+					₹{item?.price}
+				</p>
+
+				{/* Category */}
+				<p className="text-muted mb-2 small">
+					{item?.category} • {item?.foodType}
+				</p>
+
+				{/* 🔥 Actions */}
+				<div className="d-flex justify-content-between align-items-center mt-auto">
+
+					<button
+						className="btn btn-sm d-flex align-items-center gap-1"
+						style={{
+							background: "#f1f1f1",
+							borderRadius: "8px"
+						}}
+						onClick={() => navigate(`/add-item/${item?._id}`)}
+					>
+						<FaEdit size={12} />
+						<span className="small">Edit</span>
+					</button>
+
+					<button
+						className="btn btn-sm d-flex align-items-center gap-1"
+						style={{
+							background: "#ffe5e5",
+							color: "#FF4D4F",
+							borderRadius: "8px"
+						}}
+						onClick={() => setModalShow(true)}
+					>
+						<FaTrash size={12} />
+						<span className="small">Delete</span>
+					</button>
+
+				</div>
+
+			</div>
+
+			{/* 🔥 Modal */}
 			<DeleteModal
 				id={item?._id}
 				show={modalShow}
 				onHide={() => setModalShow(false)}
 			/>
+
 		</div>
 	)
 }

@@ -40,7 +40,10 @@ exports.signup = async (req, res) => {
 			httpOnly: true
 		})
 
-		return successResponse(res, "user created Successfully", token)
+		const userObj = newUser.toObject();
+		delete userObj.password;
+
+		return successResponse(res, "user created Successfully", userObj)
 
 	} catch (error) {
 		serverResponse(res, error, "signup error")
@@ -70,7 +73,10 @@ exports.signin = async (req, res) => {
 				maxAge: 7 * 24 * 60 * 60 * 1000
 			})
 
-			return successResponse(res, "user sign in successfully", { ...userDetail._doc, password: null, token })
+			const userObj = userDetail.toObject();
+			delete userObj.password;
+
+			return successResponse(res, "user sign in successfully", userObj)
 		}
 
 		return errorResponse(res, "incorrect password");
@@ -161,14 +167,52 @@ exports.resetPassword = async (req, res) => {
 	}
 }
 
+// exports.authWithGoogle = async (req, res) => {
+// 	try {
+// 		const { fullname, email, phone: mobile, role } = req.body;
+// 		// if (!role) {
+// 		// 	return errorResponse(res, "role is missing")
+// 		// }
+// 		let user = await User.findOne({ email });
+// 		let isNew = false;
+// 		if (!user) {
+// 			user = await User.create({
+// 				fullname,
+// 				mobile,
+// 				email,
+// 				role
+// 			})
+// 			isNew = true
+// 		}
+
+// 		if (!isNew && mobile) {
+// 			return errorResponse(res, "account with this email already existed", null);
+// 		}
+
+// 		const token = await jwt.sign({ userId: user._id, role: user.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
+
+// 		console.log("token", token)
+
+// 		res.cookie("token", token, {
+// 			secure: false,
+// 			sameSite: "strict",
+// 			maxAge: 7 * 24 * 60 * 60 * 1000,
+// 			httpOnly: true
+// 		})
+
+// 		return successResponse(res, "sucess", token)
+// 	} catch (error) {
+// 		serverResponse(res, error.message, "auth google error")
+// 	}
+// }
+
 exports.authWithGoogle = async (req, res) => {
 	try {
 		const { fullname, email, phone: mobile, role } = req.body;
-		// if (!role) {
-		// 	return errorResponse(res, "role is missing")
-		// }
+
 		let user = await User.findOne({ email });
 		let isNew = false;
+
 		if (!user) {
 			user = await User.create({
 				fullname,
@@ -176,26 +220,32 @@ exports.authWithGoogle = async (req, res) => {
 				email,
 				role
 			})
-			isNew = true
+			isNew = true;
 		}
 
-		if (!isNew && mobile) {
-			return errorResponse(res, "account with this email already existed", null);
-		}
+		// if (!isNew && mobile) {
+		// 	return errorResponse(res, "account with this email already existed", null);
+		// }
 
-		const token = await jwt.sign({ userId: user._id, role: user.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
-
-		console.log("token", token)
+		const token = jwt.sign(
+			{ userId: user._id, role: user.role },
+			process.env.JWTSECRETKEY,
+			{ expiresIn: "7d" }
+		);
 
 		res.cookie("token", token, {
 			secure: false,
 			sameSite: "strict",
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 			httpOnly: true
-		})
+		});
 
-		return successResponse(res, "sucess", token)
+		const userObj = user.toObject();
+		delete userObj.password;
+
+		return successResponse(res, "success", userObj);
+
 	} catch (error) {
-		serverResponse(res, error.message, "auth google error")
+		serverResponse(res, error.message, "auth google error");
 	}
-}
+};

@@ -1,14 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import axios from "axios"
-import { useState } from 'react';
 import { serverUrl } from '../App';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FcGoogle } from "react-icons/fc";
+import { useDispatch } from "react-redux";
+import { setUserDetails as setDetails } from "../redux/userSlice";
 
 function Signup() {
+
 	const navigate = useNavigate()
+	const dispatch = useDispatch();
 	const [userDetails, setUserDetails] = useState({
 		fullname: "",
 		email: "",
@@ -18,23 +22,16 @@ function Signup() {
 	})
 
 	const handleChange = (e) => {
-
-		const name = e.target.name;
-		const value = e.target.value;
-
-		setUserDetails((prev) => ({
-			...prev, [name]: value
-		}
-		))
+		const { name, value } = e.target;
+		setUserDetails(prev => ({ ...prev, [name]: value }))
 	}
 
 	const signup = async (e) => {
 		e.preventDefault();
 		try {
-			const res = await axios.post(`${serverUrl}/auth/signup`, { ...userDetails }, { withCredentials: true })
-			if (res.status === 200) {
-				navigate("/")
-			}
+			const res = await axios.post(`${serverUrl}/auth/signup`, userDetails, { withCredentials: true })
+			dispatch(setDetails(res?.data?.data))
+			if (res.status === 200) navigate("/")
 		} catch (error) {
 			console.log("signup error", error.message)
 		}
@@ -42,74 +39,183 @@ function Signup() {
 
 	const signupWithGoogle = async () => {
 		try {
+			if (!userDetails.phone || !userDetails.role) {
+				return toast.error("Phone aur role required hai ⚠️")
+			}
+
 			const provider = new GoogleAuthProvider()
 			const result = await signInWithPopup(auth, provider)
-			// console.log("result", result)
-			// console.log(result.user.displayName, result.user.email)
-			try {
-				if (!userDetails.phone || !userDetails.role) {
-					return toast.error("missing phone no or role")
-				}
-				const details = {
-					phone: userDetails?.phone,
-					role: userDetails?.role,
-					fullname: result?.user?.displayName,
-					email: result?.user?.email
-				}
-				const res = await axios.post(`${serverUrl}/auth/auth-google`, details, { withCredentials: true })
-				if (res.status === 200) {
-					navigate("/")
-				}
-			} catch (error) {
-				toast.error(error.response?.data?.message)
-				console.log("auth with google error", error.response?.data?.message)
+
+			const res = await axios.post(`${serverUrl}/auth/auth-google`, {
+				phone: userDetails.phone,
+				role: userDetails.role,
+				fullname: result?.user?.displayName,
+				email: result?.user?.email
+			}, { withCredentials: true })
+
+			if (res.status === 200) {
+				dispatch(setDetails(res.data.data))
+				navigate("/")
 			}
 
 		} catch (error) {
+			toast.error(error.response?.data?.message)
 			console.log(error.message)
 		}
 	}
 
 	return (
-		<div className='container' >
-			<form onSubmit={signup} className='d-flex flex-column' >
-				<div className='mb-2' >
-					<label htmlFor='fullname' >fullname</label>
-					<input className='me-4' type="text" name="fullname" value={userDetails.fullname} onChange={(e) => handleChange(e)} />
-				</div>
+		<div
+			className="d-flex justify-content-center align-items-center"
+			style={{ minHeight: "100vh", background: "#f8f9fa" }}
+		>
 
-				<div className='mb-2'>
-					<label htmlFor="email">Email</label>
-					<input className='me-4' type="email" name="email" value={userDetails.email} onChange={(e) => handleChange(e)} />
-				</div>
+			<div
+				className="bg-white p-4 p-md-5"
+				style={{
+					borderRadius: "16px",
+					width: "100%",
+					maxWidth: "420px",
+					boxShadow: "0 8px 25px rgba(0,0,0,0.08)"
+				}}
+			>
 
+				{/* 🔥 Heading */}
+				<h3 className="fw-bold text-center mb-2" style={{ color: "#FF4D4F" }}>
+					Create Account 🚀
+				</h3>
 
-				<div className='mb-2'>
-					<label htmlFor="phone">Phone</label>
-					<input className='me-4' type="phone" name="phone" value={userDetails.phone} onChange={(e) => handleChange(e)} />
-				</div>
+				<p className="text-muted text-center small mb-4">
+					Join us and start ordering your favorite food
+				</p>
 
-				<div className='mb-2'>
-					<label className='me-4' htmlFor="role">Role:</label>
+				<form onSubmit={signup}>
 
-					<input className='m-2' type="radio" name="role" value="user" onChange={(e) => handleChange(e)} />User
+					{/* Fullname */}
+					<div className="mb-3">
+						<label className="form-label small">Full Name</label>
+						<input
+							type="text"
+							name="fullname"
+							value={userDetails.fullname}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter your name"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
 
-					<input className='m-2' type="radio" name="role" value="owner" onChange={(e) => handleChange(e)} />Owner
+					{/* Email */}
+					<div className="mb-3">
+						<label className="form-label small">Email</label>
+						<input
+							type="email"
+							name="email"
+							value={userDetails.email}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter your email"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
 
-					<input className='m-2' type="radio" name="role" value="deliveryBoy" onChange={(e) => handleChange(e)} />delivery Boy
-				</div>
+					{/* Phone */}
+					<div className="mb-3">
+						<label className="form-label small">Phone</label>
+						<input
+							type="tel"
+							name="phone"
+							value={userDetails.phone}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter phone number"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
 
-				<div className='mb-2'>
-					<label htmlFor="password">Password</label>
-					<input className='me-4' type="password" name="password" value={userDetails.password} onChange={(e) => handleChange(e)} />
-				</div>
+					{/* Role */}
+					<div className="mb-3">
+						<label className="form-label small">Select Role</label>
 
-				<input className='mb-2' type="button" onClick={signupWithGoogle} value="signup with google" />
+						<div className="d-flex gap-2 flex-wrap">
 
-				<input type="submit" value="submit" />
-			</form>
-			<div className='m-2' >
-				<p>already have an account? <strong onClick={() => navigate("/")} >Signin</strong></p>
+							{["user", "owner", "deliveryBoy"].map(role => (
+								<span
+									key={role}
+									onClick={() => setUserDetails(prev => ({ ...prev, role }))}
+									className={`px-3 py-2 rounded-pill small border ${userDetails.role === role ? "text-white" : ""}`}
+									style={{
+										cursor: "pointer",
+										backgroundColor: userDetails.role === role ? "#FF4D4F" : "#fff",
+										borderColor: "#FF4D4F"
+									}}
+								>
+									{role}
+								</span>
+							))}
+
+						</div>
+					</div>
+
+					{/* Password */}
+					<div className="mb-3">
+						<label className="form-label small">Password</label>
+						<input
+							type="password"
+							name="password"
+							value={userDetails.password}
+							onChange={handleChange}
+							className="form-control"
+							placeholder="Enter password"
+							style={{ borderRadius: "10px" }}
+						/>
+					</div>
+
+					{/* Submit */}
+					<button
+						type="submit"
+						className="btn w-100 mb-3"
+						style={{
+							backgroundColor: "#FF4D4F",
+							color: "#fff",
+							borderRadius: "10px",
+							padding: "10px",
+							fontWeight: "500"
+						}}
+					>
+						Create Account
+					</button>
+
+				</form>
+
+				{/* Divider */}
+				<div className="text-center my-3 text-muted small">OR</div>
+
+				{/* Google Signup */}
+				<button
+					onClick={signupWithGoogle}
+					className="btn w-100 d-flex align-items-center justify-content-center gap-2"
+					style={{
+						border: "1px solid #ddd",
+						borderRadius: "10px",
+						padding: "10px"
+					}}
+				>
+					<FcGoogle size={20} />
+					Signup with Google
+				</button>
+
+				{/* Signin */}
+				<p className="text-center mt-4 small">
+					Already have an account?{" "}
+					<span
+						style={{ color: "#FF4D4F", cursor: "pointer", fontWeight: "500" }}
+						onClick={() => navigate("/")}
+					>
+						Signin
+					</span>
+				</p>
+
 			</div>
 		</div>
 	)
