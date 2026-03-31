@@ -76,6 +76,41 @@ function Checkout() {
 		}
 	}
 
+	const openRazorpayWindow = (orderId, razorOrder) => {
+		const options = {
+			key: import.meta.env.VITE_RAZORPAY_TEST_APIKEY,
+			amount: razorOrder.amount,
+			currency: "INR",
+			name: "Vingo",
+			description: "Food Delivery Website",
+			order_id: razorOrder.id,
+			handler: async function (response) {
+				try {
+					const result = await axios.post(
+						`${serverUrl}/order/verify-payment`,
+						{
+							razorpay_payment_id: response.razorpay_payment_id,
+							// razorpay_order_id: response.razorpay_order_id,
+							// razorpay_signature: response.razorpay_signature,
+							orderId: orderId,
+						},
+						{ withCredentials: true }
+					);
+
+					// console.log("Verify Response ", result.data);
+
+					navigate("/user-orders");
+
+				} catch (error) {
+					console.log("Payment verify error ", error);
+				}
+			},
+		};
+
+		const razor = new window.Razorpay(options);
+		razor.open();
+	};
+
 	return (
 		<div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
 
