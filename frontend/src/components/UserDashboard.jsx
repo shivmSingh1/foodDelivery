@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import Nav from './Nav'
 import categories from '../utils/categories'
-import CategoryCard from './CategoryCArd'
+import CategoryCard from './CategoryCard'
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
