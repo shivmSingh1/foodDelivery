@@ -18,6 +18,8 @@ exports.isAuth = async (req, res, next) => {
 			return errorResponse(res, "token not found");
 		}
 
+		console.log("token", token)
+
 		const decode = jwt.verify(token, process.env.JWTSECRETKEY);
 
 		if (!decode) {

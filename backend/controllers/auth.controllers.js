@@ -33,12 +33,19 @@ exports.signup = async (req, res) => {
 		const token = await jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 		console.log("token", token)
 
+		// res.cookie("token", token, {
+		// 	secure: false,
+		// 	sameSite: "strict",
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
+		// 	httpOnly: true
+		// })
+
 		res.cookie("token", token, {
-			secure: false,
-			sameSite: "strict",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			httpOnly: true
-		})
+			httpOnly: true,
+			secure: true,          // ✅ MUST in production (HTTPS)
+			sameSite: "none",      // ✅ cross-origin ke liye
+			maxAge: 7 * 24 * 60 * 60 * 1000
+		});
 
 		const userObj = newUser.toObject();
 		delete userObj.password;
@@ -67,11 +74,11 @@ exports.signin = async (req, res) => {
 			const token = jwt.sign({ userId: userDetail._id, role: userDetail.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 
 			res.cookie("token", token, {
-				secure: false,
-				sameSite: "strict",
 				httpOnly: true,
+				secure: true,          // ✅ MUST in production (HTTPS)
+				sameSite: "none",      // ✅ cross-origin ke liye
 				maxAge: 7 * 24 * 60 * 60 * 1000
-			})
+			});
 
 			const userObj = userDetail.toObject();
 			delete userObj.password;
