@@ -5,18 +5,30 @@ require("dotenv").config()
 
 exports.isAuth = async (req, res, next) => {
 	try {
-		// console.log(req)
-		const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+		let token;
+
+		if (req.cookies && req.cookies.token) {
+			token = req.cookies.token;
+		}
+		else if (req.headers.authorization) {
+			token = req.headers.authorization.split(" ")[1];
+		}
+
 		if (!token) {
-			return errorResponse(res, "token not found", undefined)
+			return errorResponse(res, "token not found");
 		}
-		const decode = await jwt.verify(token, process.env.JWTSECRETKEY)
+
+		const decode = jwt.verify(token, process.env.JWTSECRETKEY);
+
 		if (!decode) {
-			return errorResponse(res, "token not verify", undefined)
+			return errorResponse(res, "token not verify");
 		}
-		req.userId = decode.userId
-		next()
+
+		req.userId = decode.userId;
+
+		next();
 	} catch (error) {
-		console.log("is auth error", error.message)
+		console.log("is auth error", error.message);
+		return errorResponse(res, "authentication failed");
 	}
-}
+};
