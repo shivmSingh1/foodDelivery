@@ -25,7 +25,7 @@ app.set("io", io) //set socket server in app
 
 app.use(cookieParser());
 app.use(cors({
-	origin: "http://localhost:5173",
+	origin: "https://fooddelivery-1-5sdd.onrender.com",
 	credentials: true
 }))
 app.use(express.json())
