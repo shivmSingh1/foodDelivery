@@ -42,8 +42,8 @@ exports.signup = async (req, res) => {
 
 		res.cookie("token", token, {
 			httpOnly: true,
-			secure: true,          // ✅ MUST in production (HTTPS)
-			sameSite: "none",      // ✅ cross-origin ke liye
+			secure: true,          //  MUST in production (HTTPS)
+			sameSite: "none",      // cross-origin ke liye
 			maxAge: 7 * 24 * 60 * 60 * 1000
 		});
 
@@ -75,8 +75,8 @@ exports.signin = async (req, res) => {
 
 			res.cookie("token", token, {
 				httpOnly: true,
-				secure: true,          // ✅ MUST in production (HTTPS)
-				sameSite: "none",      // ✅ cross-origin ke liye
+				secure: true,          //  MUST in production (HTTPS)
+				sameSite: "none",      // cross-origin ke liye
 				maxAge: 7 * 24 * 60 * 60 * 1000
 			});
 
@@ -95,7 +95,11 @@ exports.signin = async (req, res) => {
 
 exports.signout = async (req, res) => {
 	try {
-		res.clearCookie("token");
+		res.clearCookie("token", {
+			httpOnly: true,
+			secure: true,
+			sameSite: "none",
+		});
 		successResponse(res, "user logout successfuly")
 	} catch (error) {
 		serverResponse(res, error, "singout error")
