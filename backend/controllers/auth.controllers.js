@@ -34,19 +34,19 @@ exports.signup = async (req, res) => {
 		const token = await jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 		console.log("token", token)
 
-		res.cookie("token", token, {
-			secure: false,
-			sameSite: "strict",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			httpOnly: true
-		})
-
 		// res.cookie("token", token, {
-		// 	httpOnly: true,
-		// 	secure: true,          //  MUST in production (HTTPS)
-		// 	sameSite: "none",      // cross-origin ke liye
-		// 	maxAge: 7 * 24 * 60 * 60 * 1000
-		// });
+		// 	secure: false,
+		// 	sameSite: "strict",
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
+		// 	httpOnly: true
+		// })
+
+		res.cookie("token", token, {
+			httpOnly: true,
+			secure: true,          //  MUST in production (HTTPS)
+			sameSite: "none",      // cross-origin ke liye
+			maxAge: 7 * 24 * 60 * 60 * 1000
+		});
 
 		const userObj = newUser.toObject();
 		delete userObj.password;
@@ -74,12 +74,19 @@ exports.signin = async (req, res) => {
 		if (await bcrypt.compare(password, userDetail.password)) {
 			const token = jwt.sign({ userId: userDetail._id, role: userDetail.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 
+			// res.cookie("token", token, {
+			// 	secure: false,
+			// 	sameSite: "strict",
+			// 	maxAge: 7 * 24 * 60 * 60 * 1000,
+			// 	httpOnly: true
+			// })
+
 			res.cookie("token", token, {
-				secure: false,
-				sameSite: "strict",
-				maxAge: 7 * 24 * 60 * 60 * 1000,
-				httpOnly: true
-			})
+				httpOnly: true,
+				secure: true,          //  MUST in production (HTTPS)
+				sameSite: "none",      // cross-origin ke liye
+				maxAge: 7 * 24 * 60 * 60 * 1000
+			});
 
 			const userObj = userDetail.toObject();
 			delete userObj.password;
@@ -99,7 +106,7 @@ exports.signout = async (req, res) => {
 		res.clearCookie("token", {
 			httpOnly: true,
 			secure: false,
-			sameSite: "strict",
+			sameSite: "none",
 		});
 		successResponse(res, "user logout successfuly")
 	} catch (error) {
@@ -248,19 +255,19 @@ exports.authWithGoogle = async (req, res) => {
 
 		console.log("tokenddd", token)
 
-		// res.cookie("token", token, {
-		// 	httpOnly: true,
-		// 	secure: true,
-		// 	sameSite: "none",
-		// 	maxAge: 7 * 24 * 60 * 60 * 1000
-		// });
-
 		res.cookie("token", token, {
-			secure: false,
-			sameSite: "strict",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			httpOnly: true
-		})
+			httpOnly: true,
+			secure: true,
+			sameSite: "none",
+			maxAge: 7 * 24 * 60 * 60 * 1000
+		});
+
+		// res.cookie("token", token, {
+		// 	secure: false,
+		// 	sameSite: "strict",
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
+		// 	httpOnly: true
+		// })
 
 		const userObj = user.toObject();
 		delete userObj.password;

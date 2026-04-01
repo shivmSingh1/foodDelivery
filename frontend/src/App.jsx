@@ -22,9 +22,9 @@ import UserTrackOrder from './components/Orders/UserTrackOrder';
 import ShopItemsPage from './components/ShopItemsPage';
 import { io, Socket } from 'socket.io-client';
 import CompleteProfile from './pages/CompleteProfile';
-export const serverUrl = "http://localhost:5000/api"
+export const serverUrl = "https://fooddelivery-t5vz.onrender.com/api"
 
-export const socket = io("http://localhost:5000");
+export const socket = io("https://fooddelivery-t5vz.onrender.com");
 
 function App() {
   useCurrentUser()
