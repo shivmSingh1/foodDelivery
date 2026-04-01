@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
 	},
 	mobile: {
 		type: Number,
-		required: true
+		// required: true
 	},
 	role: {
 		type: String,
@@ -50,7 +50,15 @@ const userSchema = new mongoose.Schema({
 	isOnline: {
 		type: Boolean,
 		default: false
-	}
+	},
+	isProfileComplete: {
+		type: Boolean,
+		default: false
+	},
+	googleId: {
+		type: String,
+		default: null
+	},
 }, { timestamps: true })
 
 userSchema.index({ location: '2dsphere' })

@@ -8,6 +8,7 @@ import useCurrentUser from '../customHooks/useCurrentUser';
 import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { setUserDetails as setDetails } from "../redux/userSlice";
+import { toast } from 'react-toastify';
 
 function Signin() {
 
@@ -39,24 +40,28 @@ function Signin() {
 		}
 	}
 
-	const signinWithGoogle = async () => {
+	const handleGoogleAuth = async () => {
 		try {
-			const provider = new GoogleAuthProvider()
-			const result = await signInWithPopup(auth, provider)
+			const provider = new GoogleAuthProvider();
+			const result = await signInWithPopup(auth, provider);
 
 			const res = await axios.post(`${serverUrl}/auth/auth-google`, {
-				email: result?.user?.email
-			}, { withCredentials: true })
-			if (res.status === 200) {
-				dispatch(setDetails(res.data.data))
-				console.log("tuk tuk", res?.data?.data)
-				navigate("/")
+				fullname: result.user.displayName,
+				email: result.user.email,
+				googleId: result.user.uid
+			}, { withCredentials: true });
+
+			if (!res.data.isProfileComplete) {
+				navigate("/complete-profile");
+			} else {
+				dispatch(setDetails(res.data.user));
+				navigate("/");
 			}
 
 		} catch (error) {
-			console.log(error.message)
+			toast.error(error.response?.data?.message);
 		}
-	}
+	};
 
 	return (
 		<div
@@ -152,7 +157,7 @@ function Signin() {
 
 				{/* Google Login */}
 				<button
-					onClick={signinWithGoogle}
+					onClick={handleGoogleAuth}
 					className="btn w-100 d-flex align-items-center justify-content-center gap-2"
 					style={{
 						border: "1px solid #ddd",

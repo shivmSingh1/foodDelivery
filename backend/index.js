@@ -25,7 +25,7 @@ app.set("io", io) //set socket server in app
 
 app.use(cookieParser());
 app.use(cors({
-	origin: "https://fooddelivery-mocha.vercel.app",
+	origin: "http://localhost:5173",
 	credentials: true
 }))
 app.use(express.json())

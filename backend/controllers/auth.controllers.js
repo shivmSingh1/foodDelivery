@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
 const { sendMail } = require("../utils/mail.js");
+require("dotenv").config()
 
 exports.signup = async (req, res) => {
 	try {
@@ -33,19 +34,19 @@ exports.signup = async (req, res) => {
 		const token = await jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 		console.log("token", token)
 
-		// res.cookie("token", token, {
-		// 	secure: false,
-		// 	sameSite: "strict",
-		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
-		// 	httpOnly: true
-		// })
-
 		res.cookie("token", token, {
-			httpOnly: true,
-			secure: true,          //  MUST in production (HTTPS)
-			sameSite: "none",      // cross-origin ke liye
-			maxAge: 7 * 24 * 60 * 60 * 1000
-		});
+			secure: false,
+			sameSite: "strict",
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+			httpOnly: true
+		})
+
+		// res.cookie("token", token, {
+		// 	httpOnly: true,
+		// 	secure: true,          //  MUST in production (HTTPS)
+		// 	sameSite: "none",      // cross-origin ke liye
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000
+		// });
 
 		const userObj = newUser.toObject();
 		delete userObj.password;
@@ -74,11 +75,11 @@ exports.signin = async (req, res) => {
 			const token = jwt.sign({ userId: userDetail._id, role: userDetail.role }, process.env.JWTSECRETKEY, { expiresIn: "7d" })
 
 			res.cookie("token", token, {
-				httpOnly: true,
-				secure: true,          //  MUST in production (HTTPS)
-				sameSite: "none",      // cross-origin ke liye
-				maxAge: 7 * 24 * 60 * 60 * 1000
-			});
+				secure: false,
+				sameSite: "strict",
+				maxAge: 7 * 24 * 60 * 60 * 1000,
+				httpOnly: true
+			})
 
 			const userObj = userDetail.toObject();
 			delete userObj.password;
@@ -97,8 +98,8 @@ exports.signout = async (req, res) => {
 	try {
 		res.clearCookie("token", {
 			httpOnly: true,
-			secure: true,
-			sameSite: "none",
+			secure: false,
+			sameSite: "strict",
 		});
 		successResponse(res, "user logout successfuly")
 	} catch (error) {
@@ -219,24 +220,25 @@ exports.resetPassword = async (req, res) => {
 
 exports.authWithGoogle = async (req, res) => {
 	try {
-		const { fullname, email, phone: mobile, role } = req.body;
+		const { fullname, email, googleId } = req.body;
 
 		let user = await User.findOne({ email });
-		let isNew = false;
 
 		if (!user) {
 			user = await User.create({
 				fullname,
-				mobile,
 				email,
-				role
-			})
-			isNew = true;
+				googleId
+			});
+		}
+		else {
+			if (!user.googleId && googleId) {
+				user.googleId = googleId;
+				await user.save();
+			}
 		}
 
-		// if (!isNew && mobile) {
-		// 	return errorResponse(res, "account with this email already existed", null);
-		// }
+		const isProfileComplete = user.mobile && user.role;
 
 		const token = jwt.sign(
 			{ userId: user._id, role: user.role },
@@ -244,26 +246,54 @@ exports.authWithGoogle = async (req, res) => {
 			{ expiresIn: "7d" }
 		);
 
+		console.log("tokenddd", token)
+
 		// res.cookie("token", token, {
-		// 	secure: false,
-		// 	sameSite: "strict",
-		// 	maxAge: 7 * 24 * 60 * 60 * 1000,
-		// 	httpOnly: true
+		// 	httpOnly: true,
+		// 	secure: true,
+		// 	sameSite: "none",
+		// 	maxAge: 7 * 24 * 60 * 60 * 1000
 		// });
 
 		res.cookie("token", token, {
-			httpOnly: true,
-			secure: true,          //  MUST in production (HTTPS)
-			sameSite: "none",      // cross-origin ke liye
-			maxAge: 7 * 24 * 60 * 60 * 1000
-		});
+			secure: false,
+			sameSite: "strict",
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+			httpOnly: true
+		})
 
 		const userObj = user.toObject();
 		delete userObj.password;
 
-		return successResponse(res, "success", userObj);
+		return res.json({
+			success: true,
+			user: userObj,
+			isProfileComplete
+		});
 
 	} catch (error) {
 		serverResponse(res, error.message, "auth google error");
+	}
+};
+
+exports.completeProfile = async (req, res) => {
+	try {
+		const { mobile, role } = req.body;
+		const { userId } = req; // from auth middleware
+
+		if (!mobile || !role) {
+			return errorResponse(res, "phone and role required");
+		}
+
+		const user = await User.findByIdAndUpdate(
+			userId,
+			{ mobile, role },
+			{ new: true }
+		);
+
+		return successResponse(res, "profile completed", user);
+
+	} catch (error) {
+		serverResponse(res, error.message, "complete profile error");
 	}
 };

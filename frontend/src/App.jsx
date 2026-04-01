@@ -21,9 +21,10 @@ import UseUpdateLocation from './customHooks/UseUpdateLocation';
 import UserTrackOrder from './components/Orders/UserTrackOrder';
 import ShopItemsPage from './components/ShopItemsPage';
 import { io, Socket } from 'socket.io-client';
-export const serverUrl = "https://fooddelivery-t5vz.onrender.com/api"
+import CompleteProfile from './pages/CompleteProfile';
+export const serverUrl = "http://localhost:5000/api"
 
-export const socket = io("https://fooddelivery-t5vz.onrender.com/api");
+export const socket = io("http://localhost:5000");
 
 function App() {
   useCurrentUser()
@@ -76,6 +77,7 @@ function App() {
         <Route path="/owner-orders" element={<OwnerOrderCard />} />
         <Route path="/track-order/:orderId" element={<UserTrackOrder />} />
         <Route path="/shop/:shopId" element={<ShopItemsPage />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
       </Routes>
     </>
   )

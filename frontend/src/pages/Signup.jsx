@@ -37,32 +37,28 @@ function Signup() {
 		}
 	}
 
-	const signupWithGoogle = async () => {
+	const handleGoogleAuth = async () => {
 		try {
-			if (!userDetails.phone || !userDetails.role) {
-				return toast.error("Phone aur role required hai ⚠️")
-			}
-
-			const provider = new GoogleAuthProvider()
-			const result = await signInWithPopup(auth, provider)
+			const provider = new GoogleAuthProvider();
+			const result = await signInWithPopup(auth, provider);
 
 			const res = await axios.post(`${serverUrl}/auth/auth-google`, {
-				phone: userDetails.phone,
-				role: userDetails.role,
-				fullname: result?.user?.displayName,
-				email: result?.user?.email
-			}, { withCredentials: true })
+				fullname: result.user.displayName,
+				email: result.user.email,
+				googleId: result.user.uid
+			}, { withCredentials: true });
 
-			if (res.status === 200) {
-				dispatch(setDetails(res.data.data))
-				navigate("/")
+			if (!res.data.isProfileComplete) {
+				navigate("/complete-profile");
+			} else {
+				dispatch(setDetails(res.data.user));
+				navigate("/");
 			}
 
 		} catch (error) {
-			toast.error(error.response?.data?.message)
-			console.log(error.message)
+			toast.error(error.response?.data?.message);
 		}
-	}
+	};
 
 	return (
 		<div
@@ -193,7 +189,7 @@ function Signup() {
 
 				{/* Google Signup */}
 				<button
-					onClick={signupWithGoogle}
+					onClick={handleGoogleAuth}
 					className="btn w-100 d-flex align-items-center justify-content-center gap-2"
 					style={{
 						border: "1px solid #ddd",
