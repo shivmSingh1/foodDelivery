@@ -97,12 +97,52 @@ function DeliveryBoyDashboard() {
 	}, [userDetails])
 
 	useEffect(() => {
+		// 🔥 Listen for new assignments
 		socket.on("newAssignment", (data) => {
 			setAssignments(prev => [data, ...prev])
 			toast.success("New Order 🚴")
 		})
-		return () => socket.off("newAssignment")
-	}, [])
+
+		// 🔥 Listen for accepted assignments (remove from list)
+		socket.on("assignmentAccepted", (data) => {
+			setAssignments(prev => prev.filter(a => a.assignmentId !== data.assignmentId))
+		})
+
+		// 🔥 Listen for assignment completion (clear current order)
+		socket.on("assignmentCompleted", (data) => {
+			setCurrentOrder(null)
+			toast.success("Order delivered successfully! ✅")
+			fetchAssignments()
+		})
+
+		// 🔥 Listen for order status updates
+		socket.on("order:status:update", (data) => {
+			if (currentOrder && currentOrder._id === data.orderId) {
+				setCurrentOrder(prev => ({
+					...prev,
+					status: data.status
+				}))
+			}
+		})
+
+		// 🔥 Listen for order delivered event
+		socket.on("orderDelivered", (data) => {
+			if (currentOrder && currentOrder._id === data.orderId) {
+				setCurrentOrder(null)
+				toast.success(data.message)
+				fetchAssignments()
+				fetchCurrentOrder()
+			}
+		})
+
+		return () => {
+			socket.off("newAssignment")
+			socket.off("assignmentAccepted")
+			socket.off("assignmentCompleted")
+			socket.off("order:status:update")
+			socket.off("orderDelivered")
+		}
+	}, [currentOrder])
 
 	return (
 		<div style={{ background: "#f8f9fa", minHeight: "100vh" }}>

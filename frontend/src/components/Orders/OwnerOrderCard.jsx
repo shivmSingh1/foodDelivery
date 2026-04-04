@@ -34,11 +34,25 @@ function OwnerOrderCard() {
 
 	// 🔥 Real-time Orders
 	useEffect(() => {
-		socket.on("newOrder", (data) => {
+		const handleNewOrder = (data) => {
 			setMyOrders(prev => [data, ...prev])
-		})
+		}
 
-		return () => socket.off("newOrder")
+		const handleOrderUpdate = (data) => {
+			setMyOrders(prev => prev.map(order =>
+				order._id === data.orderId
+					? { ...order, status: data.status }
+					: order
+			))
+		}
+
+		socket.on("newOrder", handleNewOrder)
+		socket.on("order:status:update", handleOrderUpdate)
+
+		return () => {
+			socket.off("newOrder", handleNewOrder)
+			socket.off("order:status:update", handleOrderUpdate)
+		}
 	}, [])
 
 	return (

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
-import { serverUrl } from '../../App'
+import { serverUrl, socket } from '../../App'
 import { MapContainer, Marker, Popup, TileLayer, Polyline } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -32,6 +32,27 @@ function UserTrackOrder() {
 
 	useEffect(() => {
 		fetchOrderDetails()
+	}, [orderId])
+
+	// 🔥 Listen for real-time order status updates
+	useEffect(() => {
+		const handleOrderUpdate = (data) => {
+			if (data.orderId === orderId) {
+				setOrder(prev => ({
+					...prev,
+					status: data.status
+				}))
+				toast.info(`Order status updated to: ${data.status}`)
+			}
+		}
+
+		socket.on("order:status:update", handleOrderUpdate)
+		socket.on("orderDelivered", handleOrderUpdate)
+
+		return () => {
+			socket.off("order:status:update", handleOrderUpdate)
+			socket.off("orderDelivered", handleOrderUpdate)
+		}
 	}, [orderId])
 
 	const fetchOrderDetails = async () => {
