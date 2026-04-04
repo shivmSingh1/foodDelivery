@@ -5,21 +5,26 @@ import { toast } from 'react-toastify'
 import OrderCard from './OrderCard'
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom'
+import { useLoader } from '../../customHooks/useLoader';
 
 function OwnerOrderCard() {
 
 	const [myOrders, setMyOrders] = useState([])
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	// 🔥 Fetch Orders
 	const getOwnerOrders = async () => {
 		try {
+			showLoader('Fetching orders...')
 			const res = await axios.get(`${serverUrl}/order/getOwnerOrder`, { withCredentials: true })
 			if (res.status === 200) {
 				setMyOrders(res.data.data)
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

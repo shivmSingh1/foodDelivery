@@ -5,13 +5,16 @@ import { setShopDetails } from '../redux/shopSlice';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { FaTrash } from "react-icons/fa";
+import { useLoader } from '../customHooks/useLoader';
 
 function DeleteModal(props) {
 
 	const dispatch = useDispatch()
+	const { showLoader, hideLoader } = useLoader()
 
 	const handleDelete = async () => {
 		try {
+			showLoader('Deleting item...')
 			const res = await axios.delete(
 				`${serverUrl}/item/delete-item/${props.id}`,
 				{ withCredentials: true }
@@ -24,6 +27,8 @@ function DeleteModal(props) {
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

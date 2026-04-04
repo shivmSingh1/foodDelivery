@@ -4,6 +4,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'
+import { useLoader } from '../customHooks/useLoader';
 
 function ForgotPassword() {
 
@@ -17,6 +18,7 @@ function ForgotPassword() {
 	})
 
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	const handleChange = (e) => {
 		const { name, value } = e.target
@@ -26,6 +28,7 @@ function ForgotPassword() {
 	// 🔥 Send OTP
 	const handleSendOtp = async () => {
 		try {
+			showLoader('Sending OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/send-otp`,
 				{ email: userDetails.email },
@@ -39,12 +42,15 @@ function ForgotPassword() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
 	// 🔥 Verify OTP
 	const handleVerifyOtp = async () => {
 		try {
+			showLoader('Verifying OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/verify-otp`,
 				{ email: userDetails.email, otp: userDetails.otp },
@@ -58,14 +64,18 @@ function ForgotPassword() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
 	// 🔥 Reset Password
 	const handleResetPassword = async () => {
 		try {
+			showLoader('Resetting password...')
 
 			if (userDetails.password !== userDetails.confirmPassword) {
+				hideLoader()
 				return toast.error("Passwords do not match")
 			}
 
@@ -85,6 +95,8 @@ function ForgotPassword() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

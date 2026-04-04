@@ -4,15 +4,18 @@ import { serverUrl } from "../App";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../redux/userSlice";
+import { useLoader } from "../customHooks/useLoader";
 
 function CompleteProfile() {
 	const [mobile, setMobile] = useState("");
 	const [role, setRole] = useState("");
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
+	const { showLoader, hideLoader } = useLoader();
 
 	const submit = async () => {
 		try {
+			showLoader('Completing profile...')
 			const res = await axios.post(
 				`${serverUrl}/auth/complete-profile`,
 				{ mobile, role },
@@ -23,6 +26,8 @@ function CompleteProfile() {
 			navigate("/");
 		} catch (err) {
 			console.log(err.message);
+		} finally {
+			hideLoader()
 		}
 	};
 

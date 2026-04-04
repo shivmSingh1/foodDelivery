@@ -12,6 +12,7 @@ import getCurrentLocation from '../utils/getCurrentLocation';
 import getAddress from '../utils/getAddressByLatLng';
 import { toast } from 'react-toastify';
 import { serverUrl } from '../App';
+import { useLoader } from '../customHooks/useLoader';
 
 function Checkout() {
 
@@ -23,6 +24,7 @@ function Checkout() {
 
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	const deliveryFees = totalAmount > 250 ? "Free" : 40;
 	const totalPayableAmount = totalAmount > 250 ? totalAmount : totalAmount + deliveryFees
@@ -49,6 +51,7 @@ function Checkout() {
 	// 🔥 Place order
 	const handlePlaceOrder = async () => {
 		try {
+			showLoader('Placing order...')
 			const payload = {
 				paymentMode,
 				deliveryAddress: {
@@ -73,6 +76,8 @@ function Checkout() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

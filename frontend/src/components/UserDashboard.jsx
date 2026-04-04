@@ -9,6 +9,7 @@ import axios from 'axios';
 import { serverUrl } from '../App';
 import FoodItemsCard from './FoodItemsCard';
 import { useNavigate } from 'react-router-dom';
+import { useLoader } from '../customHooks/useLoader';
 
 function UserDashboard() {
 
@@ -21,23 +22,30 @@ function UserDashboard() {
 	const [selectedCategory, setSelectedCategory] = useState(null)
 
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	// 🔥 API Calls
 	const fetchShopsInCity = async () => {
 		try {
+			showLoader('Fetching shops...')
 			const res = await axios.get(`${serverUrl}/shop/getShopsByCity?city=${city}`, { withCredentials: true })
 			if (res.status === 200) setShopsInCity(res.data.data)
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
 	const fetchItemsInCity = async () => {
 		try {
+			showLoader('Fetching items...')
 			const res = await axios.get(`${serverUrl}/item/getItemsbyCity?city=${city}`, { withCredentials: true })
 			if (res.status === 200) setItemsInCity(res.data.data)
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

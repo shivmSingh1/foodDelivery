@@ -9,6 +9,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { setUserDetails as setDetails } from "../redux/userSlice";
 import { toast } from 'react-toastify';
+import { useLoader } from '../customHooks/useLoader';
 
 function Signin() {
 
@@ -17,6 +18,7 @@ function Signin() {
 		password: "",
 	})
 	const dispatch = useDispatch();
+	const { showLoader, hideLoader } = useLoader()
 
 	const navigate = useNavigate()
 
@@ -28,6 +30,7 @@ function Signin() {
 	const signin = async (e) => {
 		e.preventDefault();
 		try {
+			showLoader('Signing in...')
 			const res = await axios.post(`${serverUrl}/auth/login`, userDetails, { withCredentials: true })
 			console.log("FULL RESPONSE 👉", res)
 			console.log("DATA 👉", res.data)
@@ -37,11 +40,15 @@ function Signin() {
 			}
 		} catch (error) {
 			console.log("signin error", error.message)
+			toast.error("Signin failed")
+		} finally {
+			hideLoader()
 		}
 	}
 
 	const handleGoogleAuth = async () => {
 		try {
+			showLoader('Signing in with Google...')
 			const provider = new GoogleAuthProvider();
 			const result = await signInWithPopup(auth, provider);
 
@@ -60,6 +67,8 @@ function Signin() {
 
 		} catch (error) {
 			toast.error(error.response?.data?.message);
+		} finally {
+			hideLoader()
 		}
 	};
 

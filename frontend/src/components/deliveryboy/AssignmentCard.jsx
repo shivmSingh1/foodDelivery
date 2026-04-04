@@ -2,14 +2,17 @@ import axios from 'axios'
 import React, { useState } from 'react'
 import { serverUrl } from '../../App'
 import { toast } from 'react-toastify'
+import { useLoader } from '../../customHooks/useLoader';
 
 function AssignmentCard({ assign, fetchCurrentOrder }) {
 
 	const [loading, setLoading] = useState(false)
+	const { showLoader, hideLoader } = useLoader()
 
 	const acceptOrder = async (assignmentId) => {
 		try {
 			setLoading(true)
+			showLoader('Accepting order...')
 
 			const res = await axios.get(
 				`${serverUrl}/order/accept-order/${assignmentId}`,
@@ -25,6 +28,7 @@ function AssignmentCard({ assign, fetchCurrentOrder }) {
 			toast.error(error?.response?.data?.message)
 		} finally {
 			setLoading(false)
+			hideLoader()
 		}
 	}
 

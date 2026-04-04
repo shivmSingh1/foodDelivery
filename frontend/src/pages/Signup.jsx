@@ -8,11 +8,13 @@ import { toast } from 'react-toastify';
 import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { setUserDetails as setDetails } from "../redux/userSlice";
+import { useLoader } from '../customHooks/useLoader';
 
 function Signup() {
 
 	const navigate = useNavigate()
 	const dispatch = useDispatch();
+	const { showLoader, hideLoader } = useLoader()
 	const [userDetails, setUserDetails] = useState({
 		fullname: "",
 		email: "",
@@ -29,16 +31,21 @@ function Signup() {
 	const signup = async (e) => {
 		e.preventDefault();
 		try {
+			showLoader('Creating account...')
 			const res = await axios.post(`${serverUrl}/auth/signup`, userDetails, { withCredentials: true })
 			dispatch(setDetails(res?.data?.data))
 			if (res.status === 200) navigate("/")
 		} catch (error) {
 			console.log("signup error", error.message)
+			toast.error("Signup failed")
+		} finally {
+			hideLoader()
 		}
 	}
 
 	const handleGoogleAuth = async () => {
 		try {
+			showLoader('Signing up with Google...')
 			const provider = new GoogleAuthProvider();
 			const result = await signInWithPopup(auth, provider);
 
@@ -57,6 +64,8 @@ function Signup() {
 
 		} catch (error) {
 			toast.error(error.response?.data?.message);
+		} finally {
+			hideLoader()
 		}
 	};
 

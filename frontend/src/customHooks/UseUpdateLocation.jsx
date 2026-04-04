@@ -8,7 +8,11 @@ const UseUpdateLocation = () => {
 	const { userDetails } = useSelector((state) => state.user)
 	useEffect(() => {
 		const updateLocation = async (location) => {
-			const res = await axios.put(`${serverUrl}/user/updateUserLocation`, location, { withCredentials: true })
+			try {
+				await axios.put(`${serverUrl}/user/updateUserLocation`, location, { withCredentials: true })
+			} catch (error) {
+				console.log("Location update error:", error.message)
+			}
 		}
 		navigator.geolocation.watchPosition((pos) => {
 			const location = {

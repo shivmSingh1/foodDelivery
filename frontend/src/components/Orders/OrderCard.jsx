@@ -4,6 +4,7 @@ import Select from 'react-select'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import { serverUrl } from '../../App'
+import { useLoader } from '../../customHooks/useLoader';
 
 function OrderCard({ order }) {
 
@@ -13,6 +14,7 @@ function OrderCard({ order }) {
 	})
 
 	const [availableBoys, setAvailableBoys] = useState([])
+	const { showLoader, hideLoader } = useLoader()
 
 	const options = [
 		{ value: 'pending', label: 'Pending' },
@@ -24,6 +26,7 @@ function OrderCard({ order }) {
 	// 🔥 Update Status
 	const setOrderStatus = async (value) => {
 		try {
+			showLoader('Updating status...')
 			const res = await axios.post(
 				`${serverUrl}/order/updateOrderStatus`,
 				{
@@ -41,6 +44,8 @@ function OrderCard({ order }) {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

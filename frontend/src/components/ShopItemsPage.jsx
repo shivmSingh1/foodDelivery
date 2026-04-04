@@ -4,17 +4,20 @@ import axios from "axios";
 import { serverUrl } from "../App";
 import FoodItemsCard from "./FoodItemsCard";
 import { IoArrowBack } from "react-icons/io5";
+import { useLoader } from "../customHooks/useLoader";
 
 function ShopItemsPage() {
 
 	const { shopId } = useParams()
 	const [shop, setShop] = useState(null)
 	const [items, setItems] = useState([])
+	const { showLoader, hideLoader } = useLoader()
 
 	const navigate = useNavigate()
 
 	const fetchShopItems = async () => {
 		try {
+			showLoader('Loading shop items...')
 			const res = await axios.get(
 				`${serverUrl}/item/items/${shopId}`,
 				{ withCredentials: true }
@@ -27,6 +30,8 @@ function ShopItemsPage() {
 
 		} catch (error) {
 			console.log(error.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setShopDetails } from '../redux/shopSlice'
 import { IoArrowBack } from "react-icons/io5";
+import { useLoader } from '../customHooks/useLoader';
 
 function AddItems() {
 
@@ -23,6 +24,7 @@ function AddItems() {
 
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
+	const { showLoader, hideLoader } = useLoader()
 
 	const categories = [
 		"Fast Food", "Main Course", "Starters", "Snacks",
@@ -33,6 +35,7 @@ function AddItems() {
 	// 🔥 Fetch item
 	const fetchItemById = async (id) => {
 		try {
+			showLoader('Loading item...')
 			const res = await axios.get(`${serverUrl}/item/getItemById/${id}`, { withCredentials: true })
 			if (res.status === 200) {
 				setItemDetails(res.data.data)
@@ -40,6 +43,8 @@ function AddItems() {
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
@@ -65,6 +70,7 @@ function AddItems() {
 		e.preventDefault()
 
 		try {
+			showLoader(id ? 'Updating item...' : 'Adding item...')
 			let formdata = new FormData()
 
 			Object.entries(itemDetails).forEach(([key, value]) => {
@@ -87,6 +93,8 @@ function AddItems() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

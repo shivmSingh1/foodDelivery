@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate, useParams } from 'react-router-dom'
+import { useLoader } from '../../customHooks/useLoader';
 
 // 🔥 Marker Icons
 const userMarkerIcon = new L.Icon({
@@ -27,6 +28,7 @@ function UserTrackOrder() {
 	const [order, setOrder] = useState(null)
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	useEffect(() => {
 		fetchOrderDetails()
@@ -35,12 +37,14 @@ function UserTrackOrder() {
 	const fetchOrderDetails = async () => {
 		try {
 			setLoading(true)
+			showLoader('Loading order details...')
 			const res = await axios.get(`${serverUrl}/order/getOrderByid/${orderId}`, { withCredentials: true })
 			setOrder(res?.data?.data)
 		} catch (error) {
 			toast.error("Failed to fetch order")
 		} finally {
 			setLoading(false)
+			hideLoader()
 		}
 	}
 

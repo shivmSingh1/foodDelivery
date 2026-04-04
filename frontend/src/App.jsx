@@ -22,6 +22,7 @@ import UserTrackOrder from './components/Orders/UserTrackOrder';
 import ShopItemsPage from './components/ShopItemsPage';
 import { io, Socket } from 'socket.io-client';
 import CompleteProfile from './pages/CompleteProfile';
+import LoaderSpinner from './components/Spinner';
 export const serverUrl = "http://localhost:5000/api"
 
 export const socket = io("http://localhost:5000");
@@ -63,6 +64,7 @@ function App() {
 
   return (
     <>
+      <LoaderSpinner />
       <Routes>
         <Route path='/' element={userDetails ? <Home /> : <Navigate to={"/signin"} />} />
         <Route path='/signup' element={!userDetails ? <Signup /> : <Navigate to={"/"} />} />

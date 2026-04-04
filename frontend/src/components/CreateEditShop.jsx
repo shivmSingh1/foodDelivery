@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import UseGetShops from '../customHooks/UseGetShops'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'
+import { useLoader } from '../customHooks/useLoader';
 
 function CreateEditShop() {
 
@@ -13,6 +14,7 @@ function CreateEditShop() {
 
 	const { shopDetails } = useSelector(state => state.Shop)
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	const [shopInfo, setShopInfo] = useState({
 		name: "",
@@ -48,6 +50,7 @@ function CreateEditShop() {
 		e.preventDefault()
 
 		try {
+			showLoader('Saving shop details...')
 			let formData = new FormData()
 
 			Object.entries(shopInfo).forEach(([key, value]) => {
@@ -67,6 +70,8 @@ function CreateEditShop() {
 
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

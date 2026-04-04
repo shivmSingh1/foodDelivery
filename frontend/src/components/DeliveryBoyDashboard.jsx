@@ -6,6 +6,7 @@ import axios from 'axios'
 import { serverUrl, socket } from '../App'
 import AssignmentCard from './deliveryboy/AssignmentCard'
 import DeliveryboyTraking from './deliveryboy/DeliveryboyTraking'
+import { useLoader } from '../customHooks/useLoader';
 
 function DeliveryBoyDashboard() {
 
@@ -16,28 +17,35 @@ function DeliveryBoyDashboard() {
 	const [showOtpModal, setShowOtpModal] = useState(false)
 	const [otp, setOtp] = useState('')
 	const [loading, setLoading] = useState(false)
+	const { showLoader, hideLoader } = useLoader()
 
 	// 🔥 Fetch Assignments
 	const fetchAssignments = async () => {
 		try {
+			showLoader('Loading orders...')
 			const res = await axios.get(`${serverUrl}/order/get-assignment`, { withCredentials: true })
 			if (res.status === 200) {
 				setAssignments(res.data.data)
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
 	// 🔥 Fetch Current Order
 	const fetchCurrentOrder = async () => {
 		try {
+			showLoader('Loading order...')
 			const res = await axios.get(`${serverUrl}/order/getCurrentOrder`, { withCredentials: true })
 			if (res.status === 200) {
 				setCurrentOrder(res.data.data)
 			}
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
@@ -45,6 +53,7 @@ function DeliveryBoyDashboard() {
 	const requestOtp = async () => {
 		try {
 			setLoading(true)
+			showLoader('Sending OTP...')
 			await axios.post(`${serverUrl}/order/send-delivery-otp`, { orderId: currentOrder?._id }, { withCredentials: true })
 			setShowOtpModal(true)
 			toast.success("OTP sent")
@@ -52,6 +61,7 @@ function DeliveryBoyDashboard() {
 			toast.error(error?.response?.data?.message)
 		} finally {
 			setLoading(false)
+			hideLoader()
 		}
 	}
 
@@ -60,6 +70,7 @@ function DeliveryBoyDashboard() {
 			if (!otp.trim()) return toast.error("Enter OTP")
 
 			setLoading(true)
+			showLoader('Verifying OTP...')
 
 			await axios.post(`${serverUrl}/order/verify-delivery-otp`,
 				{ orderId: currentOrder?._id, otp },
@@ -76,6 +87,7 @@ function DeliveryBoyDashboard() {
 			toast.error(error?.response?.data?.message)
 		} finally {
 			setLoading(false)
+			hideLoader()
 		}
 	}
 
