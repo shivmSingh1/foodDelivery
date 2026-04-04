@@ -5,6 +5,7 @@ import { serverUrl } from "../App";
 import FoodItemsCard from "./FoodItemsCard";
 import { IoArrowBack } from "react-icons/io5";
 import { useLoader } from "../customHooks/useLoader";
+import { toast } from 'react-toastify';
 
 function ShopItemsPage() {
 
@@ -26,10 +27,12 @@ function ShopItemsPage() {
 			if (res.data.success) {
 				setShop(res.data.shop)
 				setItems(res.data.items)
+			} else {
+				toast.error("Failed to load shop items")
 			}
 
 		} catch (error) {
-			console.log(error.message)
+			toast.error(error?.response?.data?.message || "Error loading shop items")
 		} finally {
 			hideLoader()
 		}

@@ -31,13 +31,38 @@ function Signup() {
 	const signup = async (e) => {
 		e.preventDefault();
 		try {
+			if (!userDetails.fullname.trim()) {
+				return toast.error("Please enter your full name");
+			}
+			if (!userDetails.email.trim()) {
+				return toast.error("Please enter your email");
+			}
+			if (!userDetails.phone.trim()) {
+				return toast.error("Please enter your phone number");
+			}
+			if (userDetails.phone.length < 10) {
+				return toast.error("Phone number must be at least 10 digits");
+			}
+			if (!userDetails.role) {
+				return toast.error("Please select your role");
+			}
+			if (!userDetails.password.trim()) {
+				return toast.error("Please enter a password");
+			}
+			if (userDetails.password.length < 6) {
+				return toast.error("Password must be at least 6 characters");
+			}
+
 			showLoader('Creating account...')
 			const res = await axios.post(`${serverUrl}/auth/signup`, userDetails, { withCredentials: true })
 			dispatch(setDetails(res?.data?.data))
-			if (res.status === 200) navigate("/")
+			if (res.status === 200) {
+				toast.success("Account created successfully! 🎉");
+				navigate("/")
+			}
 		} catch (error) {
-			console.log("signup error", error.message)
-			toast.error("Signup failed")
+			const errorMsg = error?.response?.data?.message || "Signup failed";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}
@@ -59,11 +84,13 @@ function Signup() {
 				navigate("/complete-profile");
 			} else {
 				dispatch(setDetails(res.data.user));
+				toast.success("Account created successfully! 🎉");
 				navigate("/");
 			}
 
 		} catch (error) {
-			toast.error(error.response?.data?.message);
+			const errorMsg = error?.response?.data?.message || "Google signup failed";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}

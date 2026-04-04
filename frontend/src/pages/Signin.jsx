@@ -30,17 +30,24 @@ function Signin() {
 	const signin = async (e) => {
 		e.preventDefault();
 		try {
+			if (!userDetails.email.trim()) {
+				return toast.error("Please enter your email");
+			}
+			if (!userDetails.password.trim()) {
+				return toast.error("Please enter your password");
+			}
+
 			showLoader('Signing in...')
 			const res = await axios.post(`${serverUrl}/auth/login`, userDetails, { withCredentials: true })
-			console.log("FULL RESPONSE 👉", res)
-			console.log("DATA 👉", res.data)
+
 			if (res.status === 200) {
 				dispatch(setDetails(res?.data?.data))
+				toast.success("Welcome back! 🎉");
 				navigate("/")
 			}
 		} catch (error) {
-			console.log("signin error", error.message)
-			toast.error("Signin failed")
+			const errorMsg = error?.response?.data?.message || "Invalid email or password";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}
@@ -62,11 +69,13 @@ function Signin() {
 				navigate("/complete-profile");
 			} else {
 				dispatch(setDetails(res.data.user));
+				toast.success("Welcome back! 🎉");
 				navigate("/");
 			}
 
 		} catch (error) {
-			toast.error(error.response?.data?.message);
+			const errorMsg = error?.response?.data?.message || "Google authentication failed";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}

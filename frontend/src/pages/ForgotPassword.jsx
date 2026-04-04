@@ -28,6 +28,9 @@ function ForgotPassword() {
 	// 🔥 Send OTP
 	const handleSendOtp = async () => {
 		try {
+			if (!userDetails.email.trim()) {
+				return toast.error("Please enter your email");
+			}
 			showLoader('Sending OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/send-otp`,
@@ -37,11 +40,12 @@ function ForgotPassword() {
 
 			if (res.status === 200) {
 				setSteps(2)
-				toast.success("OTP sent successfully")
+				toast.success("OTP sent to your email! Check your inbox.")
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Failed to send OTP";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}
@@ -50,6 +54,9 @@ function ForgotPassword() {
 	// 🔥 Verify OTP
 	const handleVerifyOtp = async () => {
 		try {
+			if (!userDetails.otp.trim()) {
+				return toast.error("Please enter the OTP");
+			}
 			showLoader('Verifying OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/verify-otp`,
@@ -59,11 +66,12 @@ function ForgotPassword() {
 
 			if (res.status === 200) {
 				setSteps(3)
-				toast.success("OTP verified")
+				toast.success("OTP verified successfully! ✅")
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Invalid OTP";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}
@@ -72,12 +80,20 @@ function ForgotPassword() {
 	// 🔥 Reset Password
 	const handleResetPassword = async () => {
 		try {
-			showLoader('Resetting password...')
-
-			if (userDetails.password !== userDetails.confirmPassword) {
-				hideLoader()
-				return toast.error("Passwords do not match")
+			if (!userDetails.password.trim()) {
+				return toast.error("Please enter a new password");
 			}
+			if (!userDetails.confirmPassword.trim()) {
+				return toast.error("Please confirm your password");
+			}
+			if (userDetails.password.length < 6) {
+				return toast.error("Password must be at least 6 characters");
+			}
+			if (userDetails.password !== userDetails.confirmPassword) {
+				return toast.error("Passwords do not match");
+			}
+
+			showLoader('Resetting password...')
 
 			const res = await axios.put(
 				`${serverUrl}/auth/reset-password`,
@@ -89,12 +105,13 @@ function ForgotPassword() {
 			)
 
 			if (res.status === 200) {
-				toast.success("Password reset successful")
-				navigate("/")
+				toast.success("Password reset successful! 🎉");
+				navigate("/signin");
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Failed to reset password";
+			toast.error(errorMsg);
 		} finally {
 			hideLoader()
 		}
