@@ -31,6 +31,15 @@ exports.isAuth = async (req, res, next) => {
 		next();
 	} catch (error) {
 		console.log("is auth error", error.message);
-		return errorResponse(res, "authentication failed");
+
+		// Return 401 status for token-related errors
+		if (error.name === "JsonWebTokenError") {
+			return res.status(401).json({ success: false, message: "invalid token" });
+		}
+		if (error.name === "TokenExpiredError") {
+			return res.status(401).json({ success: false, message: "token expired" });
+		}
+
+		return res.status(401).json({ success: false, message: "authentication failed" });
 	}
 };

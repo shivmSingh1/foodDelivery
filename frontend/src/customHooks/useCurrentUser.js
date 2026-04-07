@@ -9,17 +9,26 @@ const useCurrentUser = () => {
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const res = await axios.get(`${serverUrl}/user/getCurrentUser`, { withCredentials: true })
-				if (res.status === 200) {
-					// alert("success in getting current user")
+				const res = await axios.get(`${serverUrl}/user/getCurrentUser`, {
+					withCredentials: true,
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+				if (res.status === 200 && res?.data?.data) {
+					dispatch(setUserDetails(res?.data?.data))
+					console.log("Current user fetched successfully")
 				}
-				dispatch(setUserDetails(res?.data?.data))
 			} catch (error) {
-				console.log("error in fetching current user", error.message)
+				// Only log if it's not a 401 (Unauthorized - which is expected on first load)
+				if (error.response?.status !== 401) {
+					console.log(" Error in fetching current user:", error.response?.data?.message || error.message)
+				}
+				// 401 errors are expected when user is not authenticated yet
 			}
 		}
 		fetchUser()
-	}, [])
+	}, [dispatch])
 }
 
 export default useCurrentUser
