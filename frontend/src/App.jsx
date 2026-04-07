@@ -26,7 +26,7 @@ import LoaderSpinner from './components/Spinner';
 import Footer from './components/Footer';
 import PhoneAuth from './pages/PhoneAuth';
 import { useLocation } from 'react-router-dom';
-export const serverUrl = "http://fooddelivery-t5vz.onrender.com/api"
+export const serverUrl = "https://fooddelivery-t5vz.onrender.com/api"
 
 export const socket = io("https://fooddelivery-t5vz.onrender.com");
 
