@@ -288,13 +288,13 @@ exports.resetPassword = async (req, res) => {
 
 exports.authWithGoogle = async (req, res) => {
 	try {
-		const { token } = req.body;
+		const { token: firebaseToken } = req.body;
 
-		if (!token) {
+		if (!firebaseToken) {
 			return res.status(400).json({ message: "Token required" });
 		}
 
-		const decoded = await admin.auth().verifyIdToken(token);
+		const decoded = await admin.auth().verifyIdToken(firebaseToken);
 		console.log("decode", decoded)
 
 		const firebaseUid = decoded.uid;
@@ -326,7 +326,7 @@ exports.authWithGoogle = async (req, res) => {
 
 		const isProfileComplete = user.mobile && user.role;
 
-		const jwtToken = jwt.sign(
+		const token = jwt.sign(
 			{ userId: user._id, role: user.role },
 			process.env.JWTSECRETKEY,
 			{ expiresIn: "7d" }
@@ -412,13 +412,13 @@ exports.completeProfile = async (req, res) => {
 
 exports.authWithPhone = async (req, res) => {
 	try {
-		const { token } = req.body;
+		const { token: firebaseToken } = req.body;
 
-		if (!token) {
+		if (!firebaseToken) {
 			return res.status(400).json({ message: "Token required" });
 		}
 
-		const decoded = await admin.auth().verifyIdToken(token);
+		const decoded = await admin.auth().verifyIdToken(firebaseToken);
 
 		const firebaseUid = decoded.uid;
 		const phone = decoded.phone_number || "";
@@ -451,7 +451,7 @@ exports.authWithPhone = async (req, res) => {
 		const isProfileComplete =
 			user.fullname && user.email && user.role;
 
-		const jwtToken = jwt.sign(
+		const token = jwt.sign(
 			{ userId: user._id, role: user.role },
 			process.env.JWTSECRETKEY,
 			{ expiresIn: "7d" }

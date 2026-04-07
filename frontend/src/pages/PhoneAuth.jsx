@@ -74,7 +74,7 @@ function PhoneAuth() {
 			if (!res.data.isProfileComplete) {
 				navigate("/complete-profile");
 			} else {
-				dispatch(setUserDetails(res.data.user));
+				dispatch(setUserDetails(res?.data?.user));
 				navigate("/");
 			}
 		} catch (error) {
