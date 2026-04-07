@@ -24,6 +24,7 @@ import { io, Socket } from 'socket.io-client';
 import CompleteProfile from './pages/CompleteProfile';
 import LoaderSpinner from './components/Spinner';
 import Footer from './components/Footer';
+import PhoneAuth from './pages/PhoneAuth';
 export const serverUrl = "http://localhost:5000/api"
 
 export const socket = io("http://localhost:5000");
@@ -83,6 +84,7 @@ function App() {
             <Route path="/track-order/:orderId" element={<UserTrackOrder />} />
             <Route path="/shop/:shopId" element={<ShopItemsPage />} />
             <Route path="/complete-profile" element={<CompleteProfile />} />
+            <Route path="/auth-phone" element={<PhoneAuth />} />
           </Routes>
         </div>
         <Footer />

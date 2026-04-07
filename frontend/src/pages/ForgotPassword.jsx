@@ -25,7 +25,7 @@ function ForgotPassword() {
 		setUserDetails(prev => ({ ...prev, [name]: value }))
 	}
 
-	// 🔥 Send OTP
+
 	const handleSendOtp = async () => {
 		try {
 			if (!userDetails.email.trim()) {
@@ -51,7 +51,7 @@ function ForgotPassword() {
 		}
 	}
 
-	// 🔥 Verify OTP
+
 	const handleVerifyOtp = async () => {
 		try {
 			if (!userDetails.otp.trim()) {
@@ -66,7 +66,7 @@ function ForgotPassword() {
 
 			if (res.status === 200) {
 				setSteps(3)
-				toast.success("OTP verified successfully! ✅")
+				toast.success("OTP verified successfully! ")
 			}
 
 		} catch (error) {
@@ -105,7 +105,7 @@ function ForgotPassword() {
 			)
 
 			if (res.status === 200) {
-				toast.success("Password reset successful! 🎉");
+				toast.success("Password reset successful! ");
 				navigate("/signin");
 			}
 

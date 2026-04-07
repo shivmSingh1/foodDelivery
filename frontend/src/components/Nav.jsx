@@ -85,7 +85,7 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 						style={{ color: "#FF4D4F", cursor: "pointer" }}
 						onClick={() => navigate("/")}
 					>
-						FoodDelivery
+						EatSnap
 					</h4>
 
 					{/* Right icons (mobile + desktop) */}

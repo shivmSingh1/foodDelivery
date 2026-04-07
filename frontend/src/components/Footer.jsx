@@ -17,7 +17,7 @@ function Footer() {
 						{/* 🏢 Company Info */}
 						<div className="col-12 col-md-3">
 							<h5 className="fw-bold mb-3" style={{ color: "#FF4D4F" }}>
-								🍕 FoodDelivery
+								EatSnap
 							</h5>
 							<p className="text-light small mb-3">
 								Fast, fresh, and delicious food delivered to your doorstep.
@@ -109,7 +109,7 @@ function Footer() {
 								<div className="d-flex align-items-start gap-2 mb-2">
 									<FaPhone size={14} style={{ marginTop: "2px", color: "#FF4D4F" }} />
 									<div>
-										<p className="small mb-0 text-light">+91 9876543210</p>
+										<p className="small mb-0 text-light">+91 111122222</p>
 									</div>
 								</div>
 								<div className="d-flex align-items-start gap-2 mb-2">
@@ -135,7 +135,7 @@ function Footer() {
 					{/* 🔥 Bottom Section */}
 					<div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
 						<p className="text-light small mb-2 mb-md-0">
-							© {currentYear} FoodDelivery. All rights reserved.
+							© {currentYear} EatSnap. All rights reserved.
 						</p>
 						<div className="d-flex gap-4">
 							<a href="#" className="text-light small text-decoration-none hover-link">Privacy Policy</a>

@@ -4,7 +4,10 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
 const { sendMail } = require("../utils/mail.js");
+const admin = require("../utils/firebase.js");
+const userModal = require("../modals/user.modal.js");
 require("dotenv").config()
+
 
 exports.signup = async (req, res) => {
 	try {
@@ -218,82 +221,242 @@ exports.resetPassword = async (req, res) => {
 // 	}
 // }
 
+// exports.authWithGoogle = async (req, res) => {
+// 	try {
+// 		const { fullname, email, googleId } = req.body;
+
+// 		let user = await User.findOne({ email });
+
+// 		if (!user) {
+// 			user = await User.create({
+// 				fullname,
+// 				email,
+// 				googleId
+// 			});
+// 		}
+// 		else {
+// 			if (!user.googleId && googleId) {
+// 				user.googleId = googleId;
+// 				await user.save();
+// 			}
+// 		}
+
+// 		const isProfileComplete = user.mobile && user.role;
+
+// 		const token = jwt.sign(
+// 			{ userId: user._id, role: user.role },
+// 			process.env.JWTSECRETKEY,
+// 			{ expiresIn: "7d" }
+// 		);
+
+// 		// console.log("tokenddd", token)
+
+// 		// res.cookie("token", token, {
+// 		// 	httpOnly: true,
+// 		// 	secure: true,
+// 		// 	sameSite: "none",
+// 		// 	maxAge: 7 * 24 * 60 * 60 * 1000
+// 		// });
+
+// 		res.cookie("token", token, {
+// 			secure: false,
+// 			sameSite: "strict",
+// 			maxAge: 7 * 24 * 60 * 60 * 1000,
+// 			httpOnly: true
+// 		})
+
+// 		const userObj = user.toObject();
+// 		delete userObj.password;
+
+// 		return res.json({
+// 			success: true,
+// 			user: userObj,
+// 			isProfileComplete
+// 		});
+
+// 	} catch (error) {
+// 		serverResponse(res, error.message, "auth google error");
+// 	}
+// };
+
 exports.authWithGoogle = async (req, res) => {
 	try {
-		const { fullname, email, googleId } = req.body;
+		const { token } = req.body;
 
-		let user = await User.findOne({ email });
+		if (!token) {
+			return res.status(400).json({ message: "Token required" });
+		}
+
+		const decoded = await admin.auth().verifyIdToken(token);
+		console.log("decode", decoded)
+
+		const firebaseUid = decoded.uid;
+		const email = decoded.email || "";
+		const fullname = decoded.name || "";
+
+		let user = await User.findOne({ firebaseUid });
 
 		if (!user) {
-			user = await User.create({
-				fullname,
-				email,
-				googleId
-			});
-		}
-		else {
-			if (!user.googleId && googleId) {
-				user.googleId = googleId;
-				await user.save();
+			if (!user) {
+				let existingEmailUser = await User.findOne({ email });
+
+				if (existingEmailUser && existingEmailUser.firebaseUid !== firebaseUid) {
+					return res.status(400).json({
+						message: "Email already in use"
+					});
+				}
+				user = await User.create({
+					firebaseUid,
+					email
+				});
 			}
+		} else {
+			if (email && user.email !== email) user.email = email;
+			if (fullname && user.fullname !== fullname) user.fullname = fullname;
+
+			await user.save();
 		}
 
 		const isProfileComplete = user.mobile && user.role;
 
-		const token = jwt.sign(
+		const jwtToken = jwt.sign(
 			{ userId: user._id, role: user.role },
 			process.env.JWTSECRETKEY,
 			{ expiresIn: "7d" }
 		);
 
-		console.log("tokenddd", token)
-
-		// res.cookie("token", token, {
-		// 	httpOnly: true,
-		// 	secure: true,
-		// 	sameSite: "none",
-		// 	maxAge: 7 * 24 * 60 * 60 * 1000
-		// });
-
-		res.cookie("token", token, {
+		res.cookie("token", jwtToken, {
+			httpOnly: true,
 			secure: false,
 			sameSite: "strict",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			httpOnly: true
-		})
+		});
 
 		const userObj = user.toObject();
 		delete userObj.password;
 
-		return res.json({
+		res.json({
 			success: true,
 			user: userObj,
 			isProfileComplete
 		});
 
 	} catch (error) {
-		serverResponse(res, error.message, "auth google error");
+		console.error(error);
+		res.status(401).json({ message: error.message });
 	}
 };
 
 exports.completeProfile = async (req, res) => {
 	try {
-		const { mobile, role } = req.body;
-		const { userId } = req; // from auth middleware
+		let { mobile, role, fullname, email } = req.body;
+		const { userId } = req;
 
-		if (!mobile || !role) {
-			return errorResponse(res, "phone and role required");
+		const user = await userModal.findById(userId);
+
+		if (!user) {
+			return errorResponse(res, "user not found");
 		}
 
-		const user = await User.findByIdAndUpdate(
-			userId,
-			{ mobile, role },
-			{ new: true }
-		);
+		if (email) {
+			const existingUser = await userModal.findOne({ email: email })
+			if (existingUser) {
+				return errorResponse(res, "User with this email already exist")
+			}
+		}
 
-		return successResponse(res, "profile completed", user);
+		mobile = mobile || user.mobile;
+		fullname = fullname || user.fullname;
+		email = email || user.email;
+		role = role || user.role;
+
+		if (!mobile || !role || !fullname || !email) {
+			return errorResponse(res, "missing credentials");
+		}
+
+		if (mobile !== user.mobile) user.mobile = mobile;
+		if (fullname !== user.fullname) user.fullname = fullname;
+		if (email !== user.email) user.email = email;
+		if (role !== user.role) user.role = role;
+
+		await user.save();
+		const userObj = user.toObject();
+		delete userObj.password;
+
+		return successResponse(res, "profile completed", userObj);
 
 	} catch (error) {
 		serverResponse(res, error.message, "complete profile error");
+	}
+};
+
+
+
+
+
+exports.authWithPhone = async (req, res) => {
+	try {
+		const { token } = req.body;
+
+		if (!token) {
+			return res.status(400).json({ message: "Token required" });
+		}
+
+		const decoded = await admin.auth().verifyIdToken(token);
+
+		const firebaseUid = decoded.uid;
+		const phone = decoded.phone_number || "";
+
+		if (!firebaseUid) {
+			return res.status(400).json({ message: "Invalid token" });
+		}
+
+		let user = await userModal.findOne({ firebaseUid });
+
+		if (!user) {
+			let existingPhoneUser = await userModal.findOne({ mobile: phone });
+			if (existingPhoneUser && existingPhoneUser.firebaseUid !== firebaseUid) {
+				return res.status(400).json({
+					message: "Phone already in use"
+				});
+			}
+
+			user = await userModal.create({
+				firebaseUid,
+				mobile: phone,
+			});
+		} else {
+			if (phone && user.mobile !== phone) {
+				user.mobile = phone;
+				await user.save();
+			}
+		}
+
+		const isProfileComplete =
+			user.fullname && user.email && user.role;
+
+		const jwtToken = jwt.sign(
+			{ userId: user._id, role: user.role },
+			process.env.JWTSECRETKEY,
+			{ expiresIn: "7d" }
+		);
+
+		res.cookie("token", jwtToken, {
+			httpOnly: true,
+			secure: false,
+			sameSite: "strict",
+		});
+
+		const userObj = user.toObject();
+		delete userObj.password;
+
+		res.json({
+			success: true,
+			user: userObj,
+			isProfileComplete,
+		});
+
+	} catch (error) {
+		console.error(error);
+		res.status(401).json({ message: error.message });
 	}
 };

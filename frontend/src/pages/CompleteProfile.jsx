@@ -2,13 +2,18 @@ import React, { useState } from "react";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserDetails } from "../redux/userSlice";
 import { useLoader } from "../customHooks/useLoader";
 import { toast } from 'react-toastify';
 import { IoArrowBack } from "react-icons/io5";
+import useCurrentUser from "../customHooks/useCurrentUser";
 
 function CompleteProfile() {
+	useCurrentUser()
+	const { userDetails } = useSelector((state) => state.user)
+	const [fullname, setFullname] = useState("");
+	const [email, setEmail] = useState("");
 	const [mobile, setMobile] = useState("");
 	const [role, setRole] = useState("");
 	const navigate = useNavigate();
@@ -17,7 +22,13 @@ function CompleteProfile() {
 
 	const submit = async () => {
 		try {
-			if (!mobile.trim()) {
+			if (!fullname.trim() && !userDetails?.fullname) {
+				return toast.error("Please enter your full name");
+			}
+			if (!email.trim() && !userDetails?.email) {
+				return toast.error("Please enter your email");
+			}
+			if (!mobile.trim() && !userDetails?.mobile) {
 				return toast.error("Please enter your phone number");
 			}
 			if (!role) {
@@ -27,7 +38,7 @@ function CompleteProfile() {
 			showLoader('Completing profile...')
 			const res = await axios.post(
 				`${serverUrl}/auth/complete-profile`,
-				{ mobile, role },
+				{ fullname, email, mobile, role },
 				{ withCredentials: true }
 			);
 
@@ -76,15 +87,50 @@ function CompleteProfile() {
 				<p className="text-muted text-sm mb-4">
 					Let us know more about you to get started
 				</p>
+				{/* 🔥 Full Name Input */}
+				<div className="mb-3">
+					<label className="form-label small fw-semibold">Full Name</label>
+					<input
+						type="text"
+						className="form-control"
+						placeholder="Enter your full name"
+						value={fullname || userDetails?.fullname}
+						onChange={(e) => setFullname(e.target.value)}
+						style={{
+							borderRadius: "10px",
+							border: "1px solid #ddd",
+							padding: "12px 15px"
+						}}
+						disabled={userDetails?.fullname ? true : false}
+					/>
+					<small className="text-muted d-block mt-1">Your full name</small>
+				</div>
+				{/* 🔥 Email Input */}
+				<div className="mb-3">
+					<label className="form-label small fw-semibold">Email Address</label>
+					<input
+						type="email"
+						className="form-control"
+						placeholder="Enter your email address"
+						value={email || userDetails?.email}
+						onChange={(e) => setEmail(e.target.value)}
+						style={{
+							borderRadius: "10px",
+							border: "1px solid #ddd",
+							padding: "12px 15px"
+						}}
+						disabled={userDetails?.email ? true : false}
+					/>
+					<small className="text-muted d-block mt-1">We'll use this for account recovery</small>
+				</div>
 
-				{/* 🔥 Phone Input */}
 				<div className="mb-3">
 					<label className="form-label small fw-semibold">Phone Number</label>
 					<input
 						type="tel"
 						className="form-control"
 						placeholder="Enter your phone number"
-						value={mobile}
+						value={mobile || userDetails?.mobile}
 						onChange={(e) => setMobile(e.target.value)}
 						style={{
 							borderRadius: "10px",
@@ -92,6 +138,7 @@ function CompleteProfile() {
 							padding: "12px 15px"
 						}}
 						maxLength="10"
+						disabled={userDetails?.mobile ? true : false}
 					/>
 					<small className="text-muted d-block mt-1">10 digit mobile number</small>
 				</div>

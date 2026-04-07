@@ -42,7 +42,7 @@ function Signin() {
 
 			if (res.status === 200) {
 				dispatch(setDetails(res?.data?.data))
-				toast.success("Welcome back! 🎉");
+				toast.success("Welcome back! ");
 				navigate("/")
 			}
 		} catch (error) {
@@ -59,17 +59,17 @@ function Signin() {
 			const provider = new GoogleAuthProvider();
 			const result = await signInWithPopup(auth, provider);
 
+			const idToken = await result.user.getIdToken();
+
 			const res = await axios.post(`${serverUrl}/auth/auth-google`, {
-				fullname: result.user.displayName,
-				email: result.user.email,
-				googleId: result.user.uid
+				token: idToken
 			}, { withCredentials: true });
 
 			if (!res.data.isProfileComplete) {
 				navigate("/complete-profile");
 			} else {
 				dispatch(setDetails(res.data.user));
-				toast.success("Welcome back! 🎉");
+				toast.success("Welcome back! ");
 				navigate("/");
 			}
 
@@ -95,17 +95,17 @@ function Signin() {
 				style={{
 					borderRadius: "16px",
 					width: "100%",
-					maxWidth: "400px",
+					maxWidth: "420px",
 					boxShadow: "0 8px 25px rgba(0,0,0,0.08)"
 				}}
 			>
 
 				{/* 🔥 Heading */}
-				<h3 className="fw-bold mb-3 text-center" style={{ color: "#FF4D4F" }}>
+				<h3 className="fw-bold text-center mb-2" style={{ color: "#FF4D4F" }}>
 					Welcome Back 👋
 				</h3>
 
-				<p className="text-muted text-center mb-4 small">
+				<p className="text-muted text-center small mb-4">
 					Login to continue ordering your favorite food
 				</p>
 
@@ -114,37 +114,37 @@ function Signin() {
 
 					{/* Email */}
 					<div className="mb-3">
-						<label className="form-label small">Email</label>
+						<label className="form-label small fw-500">Email Address</label>
 						<input
 							type="email"
 							name="email"
 							value={userDetails.email}
 							onChange={handleChange}
 							className="form-control"
-							placeholder="Enter your email"
-							style={{ borderRadius: "10px" }}
+							placeholder="your@email.com"
+							style={{ borderRadius: "10px", padding: "10px 12px" }}
 						/>
 					</div>
 
 					{/* Password */}
-					<div className="mb-2">
-						<label className="form-label small">Password</label>
+					<div className="mb-3">
+						<label className="form-label small fw-500">Password</label>
 						<input
 							type="password"
 							name="password"
 							value={userDetails.password}
 							onChange={handleChange}
 							className="form-control"
-							placeholder="Enter password"
-							style={{ borderRadius: "10px" }}
+							placeholder="••••••••"
+							style={{ borderRadius: "10px", padding: "10px 12px" }}
 						/>
 					</div>
 
-					{/* Reset */}
+					{/* Forgot Password */}
 					<div className="text-end mb-3">
 						<span
-							className="small text-danger"
-							style={{ cursor: "pointer" }}
+							className="small"
+							style={{ color: "#FF4D4F", cursor: "pointer", fontWeight: "500" }}
 							onClick={() => navigate("/forgot-password")}
 						>
 							Forgot Password?
@@ -160,43 +160,51 @@ function Signin() {
 							color: "#fff",
 							borderRadius: "10px",
 							padding: "10px",
-							fontWeight: "500"
+							fontWeight: "500",
+							border: "none"
 						}}
 					>
-						Login
+						Sign In
 					</button>
 
 				</form>
 
 				{/* Divider */}
-				<div className="text-center my-3 text-muted small">
-					OR
-				</div>
+				<div className="text-center my-3 text-muted small">OR</div>
 
 				{/* Google Login */}
 				<button
 					onClick={handleGoogleAuth}
-					className="btn w-100 d-flex align-items-center justify-content-center gap-2"
+					className="btn w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
 					style={{
 						border: "1px solid #ddd",
 						borderRadius: "10px",
-						padding: "10px"
+						padding: "10px",
+						color: "#333",
+						backgroundColor: "#fff"
 					}}
 				>
 					<FcGoogle size={20} />
-					Sign in with Google
+					<span>Sign in with Google</span>
 				</button>
 
-				{/* Signup */}
-				<p className="text-center mt-4 small">
-					Don’t have an account?{" "}
+				{/* Signup Links */}
+				<div className="d-flex justify-content-center flex-wrap gap-1 small text-center">
+					<span>Don't have an account?</span>
 					<span
 						style={{ color: "#FF4D4F", cursor: "pointer", fontWeight: "500" }}
 						onClick={() => navigate("/signup")}
 					>
 						Signup
 					</span>
-				</p>
+					<span className="text-muted">|</span>
+					<span
+						style={{ color: "#FF4D4F", cursor: "pointer", fontWeight: "500" }}
+						onClick={() => navigate("/auth-phone")}
+					>
+						Login with Phone
+					</span>
+				</div>
 
 			</div>
 		</div>

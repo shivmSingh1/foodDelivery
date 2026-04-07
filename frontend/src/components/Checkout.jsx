@@ -86,8 +86,8 @@ function Checkout() {
 			key: import.meta.env.VITE_RAZORPAY_TEST_APIKEY,
 			amount: razorOrder.amount,
 			currency: "INR",
-			name: "Vingo",
-			description: "Food Delivery Website",
+			name: "EatSnap",
+			description: "EatSnap - Food Delivery",
 			order_id: razorOrder.id,
 			handler: async function (response) {
 				try {
