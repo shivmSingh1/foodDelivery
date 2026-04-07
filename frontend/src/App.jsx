@@ -25,6 +25,7 @@ import CompleteProfile from './pages/CompleteProfile';
 import LoaderSpinner from './components/Spinner';
 import Footer from './components/Footer';
 import PhoneAuth from './pages/PhoneAuth';
+import { useLocation } from 'react-router-dom';
 export const serverUrl = "http://fooddelivery-t5vz.onrender.com/api"
 
 export const socket = io("https://fooddelivery-t5vz.onrender.com");
@@ -35,6 +36,11 @@ function App() {
   UseCurrentCity()
   const { userDetails, cart } = useSelector(state => state.user)
   const dispatch = useDispatch()
+  const location = useLocation()
+
+  // Routes where footer should not show
+  const hideFooterRoutes = ['/signup', '/signin', '/auth-phone', '/complete-profile', '/forgot-password']
+  const shouldShowFooter = !hideFooterRoutes.includes(location.pathname)
 
   // test
 
@@ -53,7 +59,7 @@ function App() {
     }
 
     const handleConnect = () => {
-      console.log("✅ Connected:", socket.id);
+      console.log(" Connected:", socket.id);
       socket.emit("identity", { userId: userDetails._id });
     };
 
@@ -87,7 +93,7 @@ function App() {
             <Route path="/auth-phone" element={<PhoneAuth />} />
           </Routes>
         </div>
-        <Footer />
+        {shouldShowFooter && <Footer />}
       </div>
     </>
   )
