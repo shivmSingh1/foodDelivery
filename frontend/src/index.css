@@ -18,3 +18,109 @@
 .smooth-scroll::-webkit-scrollbar {
 	display: none;
 }
+
+/* ✨ Global Styling */
+* {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+	background: #f8f9fa;
+	color: #333;
+	line-height: 1.6;
+}
+
+/* 🎯 Smooth Transitions */
+button,
+input,
+select,
+textarea {
+	transition: all 0.3s ease;
+}
+
+/* 🎨 Focus Styles */
+.form-control:focus,
+.form-select:focus {
+	border-color: #FF4D4F !important;
+	box-shadow: 0 0 0 0.2rem rgba(255, 77, 79, 0.25) !important;
+}
+
+/* 🔴 Button Styles */
+.btn-danger,
+.btn:not(.btn-light):not(.btn-outline-danger) {
+	transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3) !important;
+}
+
+/* 📱 Responsive Images */
+.object-fit-cover {
+	object-fit: cover;
+}
+
+/* 🎪 Card Hover Effects */
+.bg-white {
+	transition: all 0.3s ease;
+}
+
+.bg-white:hover {
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 📊 Scrollbar Styling */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #FF4D4F;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #E63946;
+}
+
+/* 🌈 Input Placeholder */
+::placeholder {
+	color: #999 !important;
+}
+
+/* 📱 Mobile First */
+@media (max-width: 768px) {
+	body {
+		font-size: 14px;
+	}
+
+	.container {
+		padding: 0 15px;
+	}
+}
+
+/* ✅ Success State */
+.text-success {
+	color: #10B981 !important;
+}
+
+/* ⚠️ Error State */
+.text-danger {
+	color: #FF4D4F !important;
+}
+
+/* 💡 Info State */
+.text-info {
+	color: #0EA5E9 !important;
+}
+
+/* ⏳ Warning State */
+.text-warning {
+	color: #F59E0B !important;
+}

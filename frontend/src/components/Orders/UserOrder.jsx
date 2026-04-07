@@ -5,19 +5,24 @@ import { serverUrl, socket } from '../../App';
 import OrdersByShopsCard from './OrdersByShopsCard';
 import { IoMdArrowRoundBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
+import { useLoader } from '../../customHooks/useLoader';
 
 function UserOrder() {
 
 	const [orders, setOrders] = useState({ order: [] })
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	// 🔥 Fetch Orders
 	const getUserOrder = async () => {
 		try {
+			showLoader('Fetching orders...')
 			const res = await axios.get(`${serverUrl}/order/getOrders`, { withCredentials: true })
 			setOrders(res?.data?.data)
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
+		} finally {
+			hideLoader()
 		}
 	}
 

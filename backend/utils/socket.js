@@ -57,7 +57,7 @@ exports.socketHandler = (io) => {
 					{ new: true }
 				);
 
-				// console.log(" Identity set:", userId, socket.id);
+				console.log("✅ Identity set:", userId, socket.id);
 
 			} catch (error) {
 				console.log("identity socket error:", error.message);
@@ -67,7 +67,7 @@ exports.socketHandler = (io) => {
 		// DISCONNECT HANDLER
 		socket.on("disconnect", async () => {
 			try {
-				// console.log(" Disconnected:", socket.id);
+				console.log("❌ Disconnected:", socket.id);
 
 				const user = await userModal.findOneAndUpdate(
 					{ socketIds: socket.id },
@@ -84,6 +84,48 @@ exports.socketHandler = (io) => {
 
 			} catch (error) {
 				console.log(" disconnect error:", error.message);
+			}
+		});
+
+		// ASSIGNMENT ACCEPTED - Notify other delivery boys
+		socket.on("assignmentAccepted", async ({ assignmentId, deliveryBoyId }) => {
+			try {
+				console.log("🎯 Assignment accepted:", assignmentId, "by", deliveryBoyId);
+				io.emit("assignmentRemoved", { assignmentId });
+			} catch (error) {
+				console.log("assignmentAccepted error:", error.message);
+			}
+		});
+
+		// ORDER DELIVERED - Notify all parties
+		socket.on("orderDelivered", async ({ orderId, assignmentId, deliveryBoyId }) => {
+			try {
+				console.log("✅ Order delivered:", orderId, "by", deliveryBoyId);
+				io.emit("orderDeliveryCompleted", { orderId, assignmentId });
+			} catch (error) {
+				console.log("orderDelivered error:", error.message);
+			}
+		});
+
+		// ORDER STATUS UPDATED - Notify relevant parties
+		socket.on("orderStatusChanged", async ({ orderId, newStatus, recipients }) => {
+			try {
+				console.log("📊 Order status changed:", orderId, "to", newStatus);
+				if (recipients && recipients.length > 0) {
+					recipients.forEach(recipientId => {
+						const user = io.sockets.sockets.get(recipientId);
+						if (user) {
+							io.to(recipientId).emit("order:status:update", {
+								orderId,
+								status: newStatus
+							});
+						}
+					});
+				} else {
+					io.emit("order:status:update", { orderId, status: newStatus });
+				}
+			} catch (error) {
+				console.log("orderStatusChanged error:", error.message);
 			}
 		});
 

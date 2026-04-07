@@ -1,12 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
-import { serverUrl } from '../../App'
+import { serverUrl, socket } from '../../App'
 import { MapContainer, Marker, Popup, TileLayer, Polyline } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate, useParams } from 'react-router-dom'
+import { useLoader } from '../../customHooks/useLoader';
 
 // 🔥 Marker Icons
 const userMarkerIcon = new L.Icon({
@@ -27,20 +28,44 @@ function UserTrackOrder() {
 	const [order, setOrder] = useState(null)
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	useEffect(() => {
 		fetchOrderDetails()
 	}, [orderId])
 
+	// 🔥 Listen for real-time order status updates
+	useEffect(() => {
+		const handleOrderUpdate = (data) => {
+			if (data.orderId === orderId) {
+				setOrder(prev => ({
+					...prev,
+					status: data.status
+				}))
+				toast.info(`Order status updated to: ${data.status}`)
+			}
+		}
+
+		socket.on("order:status:update", handleOrderUpdate)
+		socket.on("orderDelivered", handleOrderUpdate)
+
+		return () => {
+			socket.off("order:status:update", handleOrderUpdate)
+			socket.off("orderDelivered", handleOrderUpdate)
+		}
+	}, [orderId])
+
 	const fetchOrderDetails = async () => {
 		try {
 			setLoading(true)
+			showLoader('Loading order details...')
 			const res = await axios.get(`${serverUrl}/order/getOrderByid/${orderId}`, { withCredentials: true })
 			setOrder(res?.data?.data)
 		} catch (error) {
 			toast.error("Failed to fetch order")
 		} finally {
 			setLoading(false)
+			hideLoader()
 		}
 	}
 

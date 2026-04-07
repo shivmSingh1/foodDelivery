@@ -22,7 +22,10 @@ import UserTrackOrder from './components/Orders/UserTrackOrder';
 import ShopItemsPage from './components/ShopItemsPage';
 import { io, Socket } from 'socket.io-client';
 import CompleteProfile from './pages/CompleteProfile';
-export const serverUrl = "https://fooddelivery-t5vz.onrender.com/api"
+import LoaderSpinner from './components/Spinner';
+import Footer from './components/Footer';
+import PhoneAuth from './pages/PhoneAuth';
+export const serverUrl = "http://localhost:5000/api"
 
 export const socket = io("https://fooddelivery-t5vz.onrender.com");
 
@@ -63,22 +66,29 @@ function App() {
 
   return (
     <>
-      <Routes>
-        <Route path='/' element={userDetails ? <Home /> : <Navigate to={"/signin"} />} />
-        <Route path='/signup' element={!userDetails ? <Signup /> : <Navigate to={"/"} />} />
-        <Route path="/signin" element={!userDetails ? <Signin /> : <Navigate to={"/"} />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/create-edit-shop" element={<CreateEditShop />} />
-        <Route path="/add-item" element={<AddItems />} />
-        <Route path="/add-item/:id" element={<AddItems />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/user-orders" element={<UserOrder />} />
-        <Route path="/owner-orders" element={<OwnerOrderCard />} />
-        <Route path="/track-order/:orderId" element={<UserTrackOrder />} />
-        <Route path="/shop/:shopId" element={<ShopItemsPage />} />
-        <Route path="/complete-profile" element={<CompleteProfile />} />
-      </Routes>
+      <LoaderSpinner />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div style={{ flex: 1 }}>
+          <Routes>
+            <Route path='/' element={userDetails ? <Home /> : <Navigate to={"/signin"} />} />
+            <Route path='/signup' element={!userDetails ? <Signup /> : <Navigate to={"/"} />} />
+            <Route path="/signin" element={!userDetails ? <Signin /> : <Navigate to={"/"} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/create-edit-shop" element={<CreateEditShop />} />
+            <Route path="/add-item" element={<AddItems />} />
+            <Route path="/add-item/:id" element={<AddItems />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/user-orders" element={<UserOrder />} />
+            <Route path="/owner-orders" element={<OwnerOrderCard />} />
+            <Route path="/track-order/:orderId" element={<UserTrackOrder />} />
+            <Route path="/shop/:shopId" element={<ShopItemsPage />} />
+            <Route path="/complete-profile" element={<CompleteProfile />} />
+            <Route path="/auth-phone" element={<PhoneAuth />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </>
   )
 }

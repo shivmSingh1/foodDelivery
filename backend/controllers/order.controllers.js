@@ -373,9 +373,28 @@ exports.updateOrderStatus = async (req, res) => {
 			updatedAt: updatedOrder.updatedAt
 		};
 
+		// 🔥 Notify user about order status change
 		userSocketIds.forEach((socketId) => {
 			io.to(socketId).emit("order:status:update", payload);
 		});
+
+		// 🔥 Notify shop owner about order status change
+		const shopOwner = await userModal.findById(updatedShopOrder.owner).select("socketIds");
+		if (shopOwner && shopOwner.socketIds) {
+			shopOwner.socketIds.forEach((socketId) => {
+				io.to(socketId).emit("order:status:update", payload);
+			});
+		}
+
+		// 🔥 If assignment exists, notify delivery boy
+		if (updatedShopOrder.assignedDeliveryBoy) {
+			const deliveryBoy = await userModal.findById(updatedShopOrder.assignedDeliveryBoy).select("socketIds");
+			if (deliveryBoy && deliveryBoy.socketIds) {
+				deliveryBoy.socketIds.forEach((socketId) => {
+					io.to(socketId).emit("order:status:update", payload);
+				});
+			}
+		}
 
 		successResponse(res, "order status updated successfully", {
 			shopOrder: updatedShopOrder,
@@ -449,6 +468,31 @@ exports.acceptOrder = async (req, res) => {
 		console.log("shhhOrder", shopOrder)
 		shopOrder.assignedDeliveryBoy = req.userId;
 		await order.save()
+
+		// 🔥 SOCKET.IO - Notify all delivery boys about accepted assignment
+		const io = req.app.get("io");
+		if (io) {
+			// Remove this assignment from all other delivery boys' screens
+			io.emit("assignmentAccepted", {
+				assignmentId: assignmentId,
+				deliveryBoyId: req.userId
+			});
+
+			// Notify shop that assignment is accepted
+			const shop = await Shop.findById(assignment.shop).select("owner");
+			if (shop) {
+				const owner = await userModal.findById(shop.owner);
+				if (owner && owner.socketIds) {
+					owner.socketIds.forEach(socketId => {
+						io.to(socketId).emit("assignmentStatusUpdate", {
+							assignmentId: assignmentId,
+							status: "assigned",
+							message: "Delivery boy assigned to order"
+						});
+					});
+				}
+			}
+		}
 
 		successResponse(res, "Order Accepted")
 	} catch (error) {
@@ -605,7 +649,7 @@ exports.verifyDeliveryOtp = async (req, res) => {
 			order: orderId,
 			assignedTo: deliveryBoyId,
 			status: 'assigned'
-		});
+		}).populate("shop").populate("order");
 
 		if (!assignment) {
 			return errorResponse(res, "assignment not found");
@@ -633,10 +677,60 @@ exports.verifyDeliveryOtp = async (req, res) => {
 		await assignment.save();
 
 		// Update order status to delivered
-		const order = await Order.findById(orderId);
+		const order = await Order.findById(orderId).populate("user", "socketIds");
 		if (order) {
 			order.status = "delivered";
 			await order.save();
+		}
+
+		// 🔥 SOCKET.IO - Notify all parties about delivery completion
+		const io = req.app.get("io");
+		if (io) {
+			// 1️⃣ Notify user about delivery
+			if (order && order.user && order.user.socketIds) {
+				order.user.socketIds.forEach(socketId => {
+					io.to(socketId).emit("orderDelivered", {
+						orderId: orderId,
+						assignmentId: assignment._id,
+						message: "Your order has been delivered ✅",
+						status: "delivered"
+					});
+				});
+			}
+
+			// 2️⃣ Notify shop owner about delivery completion
+			if (assignment.shop && assignment.shop.owner) {
+				const owner = await userModal.findById(assignment.shop.owner).select("socketIds");
+				if (owner && owner.socketIds) {
+					owner.socketIds.forEach(socketId => {
+						io.to(socketId).emit("orderDeliveryCompleted", {
+							orderId: orderId,
+							assignmentId: assignment._id,
+							message: "Order delivery completed",
+							status: "delivered"
+						});
+					});
+				}
+			}
+
+			// 3️⃣ Notify delivery boy to clear current assignment
+			const deliveryBoy = await userModal.findById(deliveryBoyId).select("socketIds");
+			if (deliveryBoy && deliveryBoy.socketIds) {
+				deliveryBoy.socketIds.forEach(socketId => {
+					io.to(socketId).emit("assignmentCompleted", {
+						assignmentId: assignment._id,
+						orderId: orderId,
+						message: "Order delivery completed successfully!"
+					});
+				});
+			}
+
+			// 4️⃣ Broadcast order status change
+			io.emit("order:status:update", {
+				orderId: orderId,
+				status: "delivered",
+				updatedAt: new Date()
+			});
 		}
 
 		return successResponse(res, "Order marked as delivered successfully");

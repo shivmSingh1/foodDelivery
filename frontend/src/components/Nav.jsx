@@ -7,6 +7,7 @@ import { serverUrl } from '../App';
 import { setSearchResults, setUserDetails } from '../redux/userSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useLoader } from '../customHooks/useLoader';
 
 function Nav({ isUser, isOwner, isDeliveryBoy }) {
 
@@ -18,9 +19,11 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	const handleLogout = async () => {
 		try {
+			showLoader('Logging out...')
 			const res = await axios.get(`${serverUrl}/auth/logout`, { withCredentials: true })
 			if (res.status === 200) {
 				dispatch(setUserDetails(null))
@@ -28,6 +31,8 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 			}
 		} catch (error) {
 			console.log(error.message)
+		} finally {
+			hideLoader()
 		}
 	}
 
@@ -80,7 +85,7 @@ function Nav({ isUser, isOwner, isDeliveryBoy }) {
 						style={{ color: "#FF4D4F", cursor: "pointer" }}
 						onClick={() => navigate("/")}
 					>
-						FoodDelivery
+						EatSnap
 					</h4>
 
 					{/* Right icons (mobile + desktop) */}

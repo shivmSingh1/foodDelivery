@@ -3,18 +3,18 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
 	fullname: {
 		type: String,
-		required: true
+		// required: true
 	},
 	email: {
 		type: String,
-		required: true,
+		// required: true,
 		unique: true
 	},
 	password: {
 		type: String
 	},
 	mobile: {
-		type: Number,
+		type: String,
 		// required: true
 	},
 	role: {
@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		default: null
 	},
+	firebaseUid: {
+		type: String
+	}
 }, { timestamps: true })
 
 userSchema.index({ location: '2dsphere' })

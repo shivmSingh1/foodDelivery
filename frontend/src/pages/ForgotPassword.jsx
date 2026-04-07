@@ -4,6 +4,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'
+import { useLoader } from '../customHooks/useLoader';
 
 function ForgotPassword() {
 
@@ -17,15 +18,20 @@ function ForgotPassword() {
 	})
 
 	const navigate = useNavigate()
+	const { showLoader, hideLoader } = useLoader()
 
 	const handleChange = (e) => {
 		const { name, value } = e.target
 		setUserDetails(prev => ({ ...prev, [name]: value }))
 	}
 
-	// 🔥 Send OTP
+
 	const handleSendOtp = async () => {
 		try {
+			if (!userDetails.email.trim()) {
+				return toast.error("Please enter your email");
+			}
+			showLoader('Sending OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/send-otp`,
 				{ email: userDetails.email },
@@ -34,17 +40,24 @@ function ForgotPassword() {
 
 			if (res.status === 200) {
 				setSteps(2)
-				toast.success("OTP sent successfully")
+				toast.success("OTP sent to your email! Check your inbox.")
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Failed to send OTP";
+			toast.error(errorMsg);
+		} finally {
+			hideLoader()
 		}
 	}
 
-	// 🔥 Verify OTP
+
 	const handleVerifyOtp = async () => {
 		try {
+			if (!userDetails.otp.trim()) {
+				return toast.error("Please enter the OTP");
+			}
+			showLoader('Verifying OTP...')
 			const res = await axios.post(
 				`${serverUrl}/auth/verify-otp`,
 				{ email: userDetails.email, otp: userDetails.otp },
@@ -53,21 +66,34 @@ function ForgotPassword() {
 
 			if (res.status === 200) {
 				setSteps(3)
-				toast.success("OTP verified")
+				toast.success("OTP verified successfully! ")
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Invalid OTP";
+			toast.error(errorMsg);
+		} finally {
+			hideLoader()
 		}
 	}
 
 	// 🔥 Reset Password
 	const handleResetPassword = async () => {
 		try {
-
-			if (userDetails.password !== userDetails.confirmPassword) {
-				return toast.error("Passwords do not match")
+			if (!userDetails.password.trim()) {
+				return toast.error("Please enter a new password");
 			}
+			if (!userDetails.confirmPassword.trim()) {
+				return toast.error("Please confirm your password");
+			}
+			if (userDetails.password.length < 6) {
+				return toast.error("Password must be at least 6 characters");
+			}
+			if (userDetails.password !== userDetails.confirmPassword) {
+				return toast.error("Passwords do not match");
+			}
+
+			showLoader('Resetting password...')
 
 			const res = await axios.put(
 				`${serverUrl}/auth/reset-password`,
@@ -79,12 +105,15 @@ function ForgotPassword() {
 			)
 
 			if (res.status === 200) {
-				toast.success("Password reset successful")
-				navigate("/")
+				toast.success("Password reset successful! ");
+				navigate("/signin");
 			}
 
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			const errorMsg = error?.response?.data?.message || "Failed to reset password";
+			toast.error(errorMsg);
+		} finally {
+			hideLoader()
 		}
 	}
 
