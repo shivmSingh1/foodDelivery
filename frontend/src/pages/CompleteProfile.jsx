@@ -10,7 +10,7 @@ import { IoArrowBack } from "react-icons/io5";
 import useCurrentUser from "../customHooks/useCurrentUser";
 
 function CompleteProfile() {
-
+	useCurrentUser()
 	const { userDetails } = useSelector((state) => state.user)
 	const [fullname, setFullname] = useState("");
 	const [email, setEmail] = useState("");
@@ -19,10 +19,6 @@ function CompleteProfile() {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 	const { showLoader, hideLoader } = useLoader();
-
-	useEffect(() => {
-		useCurrentUser()
-	})
 
 	const submit = async () => {
 		try {
