@@ -25,7 +25,7 @@ import CompleteProfile from './pages/CompleteProfile';
 import LoaderSpinner from './components/Spinner';
 import Footer from './components/Footer';
 import PhoneAuth from './pages/PhoneAuth';
-export const serverUrl = "http://localhost:5000/api"
+export const serverUrl = "http://fooddelivery-t5vz.onrender.com/api"
 
 export const socket = io("https://fooddelivery-t5vz.onrender.com");
 
