@@ -31,9 +31,9 @@ export const serverUrl = "https://fooddelivery-t5vz.onrender.com/api"
 export const socket = io("https://fooddelivery-t5vz.onrender.com");
 
 function App() {
+  // Call all custom hooks
   useCurrentUser()
-  UseUpdateLocation()
-  UseCurrentCity()
+
   const { userDetails, cart } = useSelector(state => state.user)
   const dispatch = useDispatch()
   const location = useLocation()
@@ -73,6 +73,8 @@ function App() {
   return (
     <>
       <LoaderSpinner />
+      <UseCurrentCity />
+      <UseUpdateLocation />
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <div style={{ flex: 1 }}>
           <Routes>

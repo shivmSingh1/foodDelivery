@@ -22,6 +22,8 @@ const UseUpdateLocation = () => {
 			updateLocation(location)
 		})
 	}, [])
+
+	return null
 }
 
 export default UseUpdateLocation;

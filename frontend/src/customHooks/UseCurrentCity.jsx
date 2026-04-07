@@ -27,6 +27,8 @@ function UseCurrentCity() {
 		}
 		getCurrentCity()
 	}, [userDetails])
+
+	return null
 }
 
 export default UseCurrentCity
